@@ -22,7 +22,7 @@ public class BatteryActivity extends Activity {
     @Override
     protected void onCreate(Bundle b) {
         super.onCreate(b);
-        setTitle("Battery & activity");
+        setTitle(getString(R.string.battery_title));
         ScrollView sc = new ScrollView(this);
         root = new LinearLayout(this);
         root.setOrientation(LinearLayout.VERTICAL);
@@ -46,12 +46,8 @@ public class BatteryActivity extends Activity {
 
     private void render(String json) {
         root.removeAllViews();
-        title("Very low battery use");
-        note("Tag Tracker is built to sip battery:\n"
-                + "• It uses NO GPS and NO location permission (positions come from Google's network).\n"
-                + "• It wakes only briefly every " + TagApp.intervalMinutes(this) + " minutes, then sleeps.\n"
-                + "• It closes its network connection between checks.\n"
-                + "• Android (WorkManager) batches the checks at efficient moments.");
+        title(getString(R.string.battery_low_title));
+        note(getString(R.string.battery_low_note, TagApp.intervalMinutes(this)));
 
         int checksToday = 0, avgMs = 0;
         double activeSec = 0;
@@ -66,16 +62,16 @@ public class BatteryActivity extends Activity {
         } catch (Exception ignored) {
         }
 
-        heading("Today");
-        info("Checks today: " + checksToday);
-        info("Total active time today: ~" + activeSec + " seconds  (the rest of the day it's asleep)");
-        info("Average per check: ~" + (avgMs / 1000.0) + " s");
+        heading(getString(R.string.battery_head_today));
+        info(getString(R.string.battery_checks_today, checksToday));
+        info(getString(R.string.battery_active_time, String.valueOf(activeSec)));
+        info(getString(R.string.battery_avg_check, String.valueOf(avgMs / 1000.0)));
 
-        button("Open Android battery settings for this app", v -> openBatterySettings());
+        button(getString(R.string.battery_open_settings), v -> openBatterySettings());
 
-        heading("Recent checks");
+        heading(getString(R.string.battery_head_recent));
         if (checks.length() == 0) {
-            note("No checks logged yet. They appear here after the app runs in the background.");
+            note(getString(R.string.battery_no_checks));
         }
         for (int i = 0; i < checks.length(); i++) {
             JSONObject c = checks.optJSONObject(i);
@@ -83,8 +79,8 @@ public class BatteryActivity extends Activity {
             long ts = c.optLong("ts") * 1000L;
             String when = DateFormat.format("MMM d, h:mm a", ts).toString();
             String line = when + "  ·  " + (c.optInt("ms") / 1000.0) + "s"
-                    + (c.optInt("added") > 0 ? "  ·  +" + c.optInt("added") + " new" : "")
-                    + (c.optBoolean("ok", true) ? "" : "  ·  (failed)");
+                    + (c.optInt("added") > 0 ? getString(R.string.battery_check_new, c.optInt("added")) : "")
+                    + (c.optBoolean("ok", true) ? "" : getString(R.string.battery_check_failed));
             info(line);
         }
     }

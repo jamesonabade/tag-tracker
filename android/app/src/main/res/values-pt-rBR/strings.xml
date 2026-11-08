@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Tag Tracker</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_sync">Status da sincronização</string>
+    <string name="notification_channel_sync_desc">Mostra quando o aplicativo verifica o Find Hub e sincroniza com o Google Drive</string>
+    <string name="notification_channel_theft">Alertas de furto / movimento</string>
+    <string name="notification_channel_theft_desc">Alerta você quando uma tag sob sentinela se move</string>
+    <string name="theft_alert_title">⚠ %1$s está se movendo!</string>
+    <string name="theft_alert_text">Moveu-se %1$d m. Toque para ver no mapa.</string>
+    <string name="action_ring_tag">Tocar alarme</string>
+    <string name="action_open_maps">Abrir no Maps</string>
+    <string name="status_guarding">🔒 Protegendo</string>
+    <string name="status_active">Ativo</string>
+    <string name="status_new_locations">%1$s · %2$d nova(s) localização(ões)%3$s · %4$s</string>
+    <string name="status_synced"> · sincronizado</string>
+    <string name="status_last_check">%1$s · última verificação às %2$s</string>
+    <string name="notification_running_title">Tag Tracker está em execução</string>
+
+    <!-- Settings Activity -->
+    <string name="settings_title">Configuração do Tag Tracker</string>
+    <string name="settings_loading">Carregando…</string>
+    <string name="settings_welcome">Configurar o Tag Tracker</string>
+    <string name="settings_intro">O Find Hub mostra apenas a última posição da sua tag. Este app salva o histórico completo e avisa se ela se mover. Primeira vez aqui? Leia o guia rápido primeiro – ele explica tudo.</string>
+    <string name="settings_guide_btn">📖  Como funciona (guia)</string>
+    <string name="settings_step_signin">Conectar</string>
+    <string name="settings_step_unlock">Desbloquear</string>
+    <string name="settings_step_bg">Segundo plano</string>
+    <string name="settings_head_1">1. Conecte sua conta Google</string>
+    <string name="settings_note_1">O Google requer DUAS etapas, ambas em páginas oficiais do próprio Google (o app nunca vê sua senha ou PIN): o login da sua conta e uma confirmação única do bloqueio de tela que libera as chaves para DESCRIPTOGRAFAR as localizações. O Google exige isso para a criptografia ponta a ponta – nenhum app pode pular essa etapa. Toque no botão abaixo e siga as instruções; ele guiará você pelas duas etapas e não precisará ser repetido. Atualizar o app mais tarde NÃO desconecta sua conta.</string>
+    <string name="settings_connect_guided">🔗  Conectar conta Google (guiado)</string>
+    <string name="settings_note_individual">Prefere fazer as duas etapas separadamente? Os botões individuais estão abaixo.</string>
+    <string name="settings_step_1_title">%1$sEtapa 1: Entrar na conta%2$s</string>
+    <string name="settings_signin_again">Entrar novamente</string>
+    <string name="settings_signin_google">Entrar com Google</string>
+    <string name="settings_step_2_title">%1$sEtapa 2: Desbloquear criptografia (necessário para ver localizações)</string>
+    <string name="settings_unlock_again">Desbloquear novamente</string>
+    <string name="settings_unlock_keys">Desbloquear chaves de criptografia</string>
+    <string name="settings_warn_unlocked">⚠ Você está conectado e suas tags estão listadas, mas o mapa continuará vazio até concluir a etapa 2. Toque em “Desbloquear chaves de criptografia” e insira o bloqueio de tela do celular.</string>
+    <string name="settings_all_set">✓ Tudo pronto – o app pode ler e descriptografar suas tags.</string>
+    <string name="settings_or">— ou —</string>
+    <string name="settings_option_b">Opção B: Se as etapas acima falharem, execute a configuração no PC uma vez (python -m server.manage google-login), copie o arquivo data/google_secrets.json gerado para este celular e importe-o aqui. Nenhum novo login será necessário no celular.</string>
+    <string name="settings_import_btn">Importar arquivo de login (google_secrets.json)</string>
+    <string name="settings_head_2">2. Verificação em segundo plano</string>
+    <string name="settings_note_2">O app verifica o Find Hub em segundo plano usando o Android WorkManager (agendador eficiente do Google) e salva todas as localizações. Consome pouquíssima bateria: acorda apenas por alguns segundos por checagem, fecha a conexão em seguida e NÃO usa permissão de GPS (as posições vêm da rede em nuvem do Google). O intervalo mínimo do Android é de 15 minutos; escolha um maior para gastar ainda menos bateria.</string>
+    <string name="settings_currently_every">Atualmente a cada %1$d minutos.</string>
+    <string name="settings_min_suffix">%1$d min</string>
+    <string name="settings_note_interval">Intervalo maior = menos bateria. 240 min é a opção de máxima economia. Veja exatamente o que o app faz e seu tempo ativo em Bateria &amp; atividade:</string>
+    <string name="settings_battery_activity_btn">Bateria &amp; atividade →</string>
+    <string name="settings_battery_ignore_note">Opcional: se o seu celular (Xiaomi, Samsung, etc.) encerra aplicativos em segundo plano, permita a execução irrestrita para evitar que verificações sejam ignoradas. Não é necessário na maioria dos aparelhos.</string>
+    <string name="settings_battery_ignore_btn">Permitir execução irrestrita em segundo plano (opcional)</string>
+    <string name="settings_battery_ignore_ok">✓ Execução irrestrita em segundo plano permitida.</string>
+    <string name="settings_bg_notify_on">✓ Notificação de status ativa enquanto o app roda em segundo plano.</string>
+    <string name="settings_bg_notify_off">Notificação de status em segundo plano desativada.</string>
+    <string name="settings_bg_notify_hide">Ocultar notificação em segundo plano</string>
+    <string name="settings_bg_notify_show">Exibir notificação em segundo plano</string>
+    <string name="settings_swipe_note">Fechar o app (deslizar para dispensar) NÃO interrompe o rastreamento – ele continuará verificando e salvando em segundo plano. Use o botão abaixo apenas se quiser parar TOTALMENTE.</string>
+    <string name="settings_tracking_stopped">⏸ O rastreamento em segundo plano está PARADO. Nenhuma localização está sendo salva.</string>
+    <string name="settings_resume_tracking">Retomar rastreamento em segundo plano</string>
+    <string name="settings_stop_tracking">⏹ Parar rastreamento (sair totalmente)</string>
+    <string name="settings_head_3">3. Armazenamento &amp; sincronização</string>
+    <string name="settings_note_3">Suas localizações são SEMPRE salvas primeiro no celular – nunca se perdem, mesmo sem internet ou com o Drive ocupado. O Google Drive é uma cópia de segurança em nuvem adicional:\n• SINCRONIZAÇÃO CONTÍNUA (recomendado): celular + Google Drive, sincroniza após cada checagem. Se estiver offline, tenta novamente depois.\n• APENAS LOCAL: mantém tudo no celular, sem nuvem (desative as duas opções abaixo).</string>
+    <string name="settings_drive_auto_on">✓ Sincronização automática PADRÃO ATIVA (pasta ‘TagTracker’ na sua conta Google).</string>
+    <string name="settings_drive_auto_off">PADRÃO: sincronização automática para a pasta ‘TagTracker’ na sua própria conta Google – sem precisar escolher arquivos, recuperada automaticamente ao entrar em outro aparelho.</string>
+    <string name="settings_sync_default_now">Sincronizar pasta padrão agora</string>
+    <string name="settings_use_default_sync">Usar sincronização padrão automática (recomendado)</string>
+    <string name="settings_see_drive">Ver o que está no meu Drive</string>
+    <string name="settings_turn_off_drive_auto">Desativar sincronização automática</string>
+    <string name="settings_or_custom">— ou use um arquivo PERSONALIZADO (qualquer pasta/conta) —\nNo seletor, toque em ☰ e escolha GOOGLE DRIVE (não a memória do celular), selecione uma pasta e dê o nome de ex.: TagTracker-history.csv.</string>
+    <string name="settings_drive_custom_on">✓ Sincronizando automaticamente com o arquivo do Drive.%1$s</string>
+    <string name="settings_last_sync_prefix">  Último backup: %1$s</string>
+    <string name="settings_no_sync_yet">  (nenhuma sincronização ainda)</string>
+    <string name="settings_sync_drive_now">Sincronizar com o Drive agora</string>
+    <string name="settings_restore_drive_file">Restaurar histórico a partir de arquivo do Drive</string>
+    <string name="settings_choose_diff_file">Escolher outro arquivo</string>
+    <string name="settings_turn_off_custom_drive">Desativar sincronização com o Drive</string>
+    <string name="settings_choose_drive_file">Escolher arquivo no Google Drive</string>
+    <string name="settings_head_4">4. Suas tags</string>
+    <string name="settings_refresh_tags">Atualizar lista de tags do Google</string>
+    <string name="settings_check_loc_now">Verificar localizações agora</string>
+    <string name="settings_head_5">5. Alertas de furto / sentinela</string>
+    <string name="settings_note_5">Ative quando o veículo ou objeto estiver estacionado. Se a tag se MOVER mais de ~150 m, você receberá um alerta SONORO ALTO com link para o Maps – para que possa agir rápido. Dica: em caso de furto, forneça a localização à polícia; não confronte ninguém sozinho.</string>
+    <string name="settings_guard_on">✓ Modo sentinela ATIVADO – você será alertado se uma tag se mover.</string>
+    <string name="settings_guard_off">Modo sentinela desativado.</string>
+    <string name="settings_guard_turn_off">DESATIVAR modo sentinela</string>
+    <string name="settings_guard_turn_on">ATIVAR modo sentinela</string>
+    <string name="settings_head_6">6. Bloqueio do aplicativo (apenas neste aparelho)</string>
+    <string name="settings_note_6">Proteja o app com uma senha para que ninguém abra seu rastreador. A senha e a dica ficam salvas APENAS neste aparelho – nunca enviadas ao Google ou Drive, portanto não podem ser recuperadas de outro lugar. Se esquecer e a dica não ajudar, reinstale o app.</string>
+    <string name="settings_applock_on">✓ Bloqueio do app ATIVADO.</string>
+    <string name="settings_change_app_pw">Alterar senha do aplicativo</string>
+    <string name="settings_turn_off_applock">Desativar bloqueio do aplicativo</string>
+    <string name="settings_set_app_pw">Definir senha do aplicativo</string>
+    <string name="settings_head_legal">Legal &amp; privacidade</string>
+    <string name="settings_note_legal">Não afiliado ao Google. Este app usa um método NÃO OFICIAL para ler a rede Find Hub – o Google pode bloquear a qualquer momento. Apenas para rastreamento de BENS PRÓPRIOS, nunca uma pessoa sem consentimento. Seus dados ficam no seu aparelho e no seu Google Drive; nada é enviado ao desenvolvedor. Código aberto (GPL-3.0), construído sobre o GoogleFindMyTools.</string>
+    <string name="settings_read_legal_btn">Ler termo completo &amp; privacidade</string>
+    <string name="settings_open_map">Abrir mapa</string>
+    <string name="settings_help_btn">Ajuda</string>
+
+    <string name="toast_signed_in_unlock">Conectado – agora confirme seu bloqueio de tela para desbloquear as localizações</string>
+    <string name="toast_tracking_resumed">Rastreamento retomado</string>
+    <string name="toast_tracking_stopped">Rastreamento em segundo plano parado. Toque em Retomar para reiniciar.</string>
+    <string name="toast_checking_find_hub">Consultando o Find Hub…</string>
+    <string name="toast_drive_sync_setup">Sincronização com o Drive configurada</string>
+    <string name="toast_no_picker">Nenhum gerenciador de arquivos disponível</string>
+    <string name="dialog_close">Fechar</string>
+    <string name="dialog_save">Salvar</string>
+    <string name="dialog_cancel">Cancelar</string>
+    <string name="hint_new_pw">Nova senha (mín. 4 caracteres)</string>
+    <string name="hint_recovery">Dica de recuperação (ex.: ‘PIN usual’)</string>
+    <string name="title_set_app_pw">Definir senha do aplicativo</string>
+    <string name="toast_pw_short">Senha muito curta</string>
+    <string name="toast_applock_set">Bloqueio do aplicativo definido</string>
+    <string name="dialog_legal_title">Legal, responsabilidade &amp; privacidade</string>
+    <string name="dialog_drive_title">Seus dados no Google Drive</string>
+
+    <!-- Lock Activity -->
+    <string name="lock_enter_pw">Digite a senha do aplicativo</string>
+    <string name="lock_pw_hint">Senha do app</string>
+    <string name="lock_unlock_btn">Desbloquear</string>
+    <string name="lock_forgot_btn">Esqueceu? Ver dica</string>
+    <string name="lock_no_hint">Nenhuma dica foi definida neste aparelho.</string>
+    <string name="lock_hint_prefix">Dica: %1$s</string>
+    <string name="lock_wrong_pw">Senha incorreta</string>
+
+    <!-- Battery Activity -->
+    <string name="battery_title">Bateria &amp; atividade</string>
+    <string name="battery_low_title">Consumo mínimo de bateria</string>
+    <string name="battery_low_note">O Tag Tracker foi construído para economizar bateria ao máximo:\n• NÃO utiliza GPS nem permissão de localização (as posições vêm da rede em nuvem do Google).\n• Acorda apenas brevemente a cada %1$d minutos e volta a dormir.\n• Encerra a conexão de rede entre as verificações.\n• O Android (WorkManager) otimiza os horários de execução.</string>
+    <string name="battery_head_today">Hoje</string>
+    <string name="battery_checks_today">Verificações hoje: %1$d</string>
+    <string name="battery_active_time">Tempo ativo total hoje: ~%1$s segundos  (o restante do dia fica dormindo)</string>
+    <string name="battery_avg_check">Média por checagem: ~%1$s s</string>
+    <string name="battery_open_settings">Abrir configurações de bateria do Android para este app</string>
+    <string name="battery_head_recent">Checagens recentes</string>
+    <string name="battery_no_checks">Nenhuma checagem registrada ainda. Elas aparecerão aqui após o app rodar em segundo plano.</string>
+
+    <!-- License Activity -->
+    <string name="license_title">Tag Tracker Pro</string>
+    <string name="license_active">✅ Pro ativo</string>
+    <string name="license_free">Versão Grátis</string>
+    <string name="license_active_desc">Todos os recursos estão liberados neste aparelho. Obrigado!</string>
+    <string name="license_free_desc">GRÁTIS: 1 tag em 1 aparelho, últimas 24 horas de histórico.\n\nPara 2+ tags e histórico ilimitado, solicite uma chave ao desenvolvedor.</string>
+    <string name="license_unlocks_head">Uma chave libera</string>
+    <string name="license_unlocks_note">• Rastrear múltiplas tags\n• Histórico ilimitado (dia → ano) e replay de rotas\n• Exportação CSV / GPX\n• Alertas de movimento / furto\n• Backup automático no Google Drive</string>
+    <string name="license_device_id_head">Seu ID de Aparelho</string>
+    <string name="license_device_id_note">A chave Pro é vinculada a ESTE aparelho. Envie este ID ao solicitar a chave:</string>
+    <string name="license_copy_id">Copiar ID do Aparelho</string>
+    <string name="license_copied_toast">ID do Aparelho copiado</string>
+    <string name="license_contact_head">Contatar desenvolvedor para obter chave</string>
+    <string name="license_email_btn">✉ Contatar desenvolvedor por E-mail</string>
+    <string name="license_share_btn">💬 Contatar por SMS / WhatsApp / outros</string>
+    <string name="license_enter_key_head">Insira sua chave Pro</string>
+    <string name="license_paste_hint">Cole a chave de licença</string>
+    <string name="license_unlock_btn">Desbloquear Pro</string>
+    <string name="license_remove_btn">Remover licença deste aparelho</string>
+
+    <!-- Google Auth Activity -->
+    <string name="auth_title_signin">Entrar com Google</string>
+    <string name="auth_title_unlock">Desbloquear criptografia do Find Hub</string>
+    <string name="auth_unlock_toast">Entre novamente para desbloquear a criptografia</string>
+    <string name="auth_connected_toast">Conectado como %1$s</string>
+    <string name="auth_unlocked_toast">Criptografia desbloqueada</string>
+
+    <!-- Main & Help Activity -->
+    <string name="help_title_activity">Como funciona</string>
+    <string name="main_share_chooser">Compartilhar localização</string>
+    <string name="main_loc_updated">Localização atualizada – salva no histórico</string>
+    <string name="main_no_new_loc">Nenhuma nova localização no momento</string>
+    <string name="main_ringing">Tocando a tag…</string>
+    <string name="main_save_share_chooser">Salvar ou compartilhar %1$s</string>
+    <string name="main_export_failed">Falha ao exportar: %1$s</string>
+    <string name="main_restored_drive">Restauradas %1$d localização(ões) do seu Google Drive</string>
+    <string name="menu_check_now">Verificar localizações agora</string>
+    <string name="menu_refresh">Atualizar</string>
+    <string name="menu_settings">Configurações &amp; ajustes</string>
+    <string name="menu_battery">Bateria &amp; atividade</string>
+    <string name="menu_pro">Tag Tracker Pro</string>
+    <string name="menu_updates">Verificar atualizações</string>
+    <string name="menu_help">Ajuda</string>
+    <string name="toast_checking_updates">Verificando atualizações…</string>
+
+    <!-- Update Checker -->
+    <string name="update_cant_read">Não foi possível verificar a versão mais recente.</string>
+    <string name="update_latest_version">Você já está na versão mais recente (%1$s).</string>
+    <string name="update_check_failed">Falha ao verificar atualizações: %1$s</string>
+    <string name="update_available_title">Atualização disponível</string>
+    <string name="update_available_msg">Uma nova versão (%1$s) está disponível.\n\nA atualização é instalada por cima do app atual e preserva tudo — seu login do Google, licença e histórico salvo continuam intactos, e você NÃO precisará entrar novamente.</string>
+    <string name="update_whats_new">\n\nNovidades:\n</string>
+    <string name="update_download_install">Baixar &amp; instalar</string>
+    <string name="update_later">Mais tarde</string>
+    <string name="update_allow_title">Permitir atualizações</string>
+    <string name="update_allow_msg">Para instalar a atualização, permita que o Tag Tracker instale apps na próxima tela e depois toque em Baixar &amp; instalar novamente.</string>
+    <string name="update_open_settings">Abrir configurações</string>
+    <string name="update_open_settings_toast">Abra Configurações → Apps → Tag Tracker → Instalar apps desconhecidos.</string>
+    <string name="update_downloading">Baixando atualização…</string>
+    <string name="update_download_failed">Falha no download: %1$s</string>
+
+    <!-- Additional Settings Strings -->
+    <string name="settings_sync_pulled">Sincronização padrão ativada – %1$d localização(ões) recuperada(s) do Drive</string>
+    <string name="settings_sync_ready">Sincronização padrão ativada – pasta do Drive pronta</string>
+    <string name="settings_sync_need_google">A sincronização automática precisa do login do Google primeiro: %1$s</string>
+    <string name="settings_synced_drive">Sincronizado com o Drive</string>
+    <string name="settings_sync_failed">Falha na sincronização: %1$s</string>
+    <string name="settings_tags_found">%1$d tag(s) encontrada(s)</string>
+    <string name="settings_tags_list_error">Não foi possível listar as tags: %1$s</string>
+    <string name="settings_drive_reading">📁 lendo status do Drive…</string>
+    <string name="settings_drive_not_yet">ainda não</string>
+    <string name="settings_drive_summary_line">📁 %1$s  ·  %2$d localização(ões) salva(s)  ·  sincroniza %3$s  ·  última sincronização: %4$s</string>
+    <string name="settings_drive_last_error">\n⚠ último erro: %1$s</string>
+    <string name="settings_drive_status_unavailable">Status do Drive indisponível: %1$s</string>
+    <string name="settings_checking_drive">Verificando o Google Drive…</string>
+    <string name="settings_drive_cant_read">Não foi possível ler o Drive: %1$s</string>
+    <string name="settings_drive_folder_label">Pasta: %1$s\n</string>
+    <string name="settings_drive_files_total">%1$d arquivo(s), %2$d KB no total\n\n</string>
+    <string name="settings_drive_empty">(vazio — nada sincronizado ainda. Toque em ‘Sincronizar pasta padrão agora’.)</string>
+    <string name="settings_drive_verify_failed">Falha na verificação: %1$s</string>
+    <string name="settings_import_login_ok">Login importado – conectado e chaves descriptografadas. Toque em Verificar localizações agora.</string>
+    <string name="settings_import_login_no_keys">Login importado, mas sem chave de criptografia. As localizações podem não ser descriptografadas.</string>
+    <string name="settings_import_failed">Falha na importação: %1$s</string>
+    <string name="settings_restore_success">%1$d localização(ões) restaurada(s) do arquivo</string>
+    <string name="settings_restore_failed">Falha na restauração: %1$s</string>
+
+    <!-- Additional License Strings -->
+    <string name="license_instructions">Envie seu ID do Dispositivo (acima). Você receberá uma chave – cole-a abaixo para desbloquear este aparelho.</string>
+    <string name="license_note_reason">Nota: %1$s</string>
+    <string name="license_removed_toast">Licença removida</string>
+    <string name="license_footer">\nCódigo aberto (GPL-3.0). Contato: %1$s</string>
+    <string name="license_email_body">Olá, gostaria de solicitar uma chave do Tag Tracker Pro.\n\nMeu ID do Dispositivo: %1$s\n\n(App: Tag Tracker)</string>
+    <string name="license_email_subject">Solicitação de chave do Tag Tracker Pro</string>
+    <string name="license_email_chooser">Solicitar chave Pro por e-mail</string>
+    <string name="license_no_email_toast">Nenhum app de e-mail encontrado. Envie um e-mail para %1$s com seu ID de Dispositivo.</string>
+    <string name="license_share_text">Solicitação de chave do Tag Tracker Pro. Meu ID de Dispositivo: %1$s (enviar para %2$s)</string>
+    <string name="license_share_chooser">Solicitar chave Pro via WhatsApp / SMS / outros</string>
+    <string name="license_share_fallback_toast">Envie seu ID de Dispositivo para %1$s</string>
+    <string name="license_paste_first">Cole sua chave primeiro</string>
+    <string name="license_unlocked_toast">Pro ativado com sucesso – obrigado!</string>
+    <string name="license_invalid_key_toast">Chave inválida: %1$s</string>
+
+    <!-- Additional Auth Strings -->
+    <string name="auth_retry_limit_title">Não foi possível concluir o login</string>
+    <string name="auth_retry_limit_msg">O login não foi concluído. Para proteger sua conta, as tentativas automáticas foram interrompidas. Você pode tentar novamente ou usar a Opção B: importar um arquivo de login gerado no PC (consulte Configurações).</string>
+    <string name="auth_error_title">Algo deu errado</string>
+    <string name="dialog_ok">OK</string>
+
+    <!-- Additional Battery Strings -->
+    <string name="battery_check_new">  ·  +%1$d nova(s)</string>
+    <string name="battery_check_failed">  ·  (falhou)</string>
+</resources>

@@ -1,4 +1,249 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Tag Tracker</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_sync">Sync status</string>
+    <string name="notification_channel_sync_desc">Shows when the app checks Find Hub and syncs to Google Drive</string>
+    <string name="notification_channel_theft">Theft / movement alerts</string>
+    <string name="notification_channel_theft_desc">Alerts you when a guarded tag moves</string>
+    <string name="theft_alert_title">⚠ %1$s is moving!</string>
+    <string name="theft_alert_text">Moved %1$d m. Tap to see the map.</string>
+    <string name="action_ring_tag">Ring tag</string>
+    <string name="action_open_maps">Open in Maps</string>
+    <string name="status_guarding">🔒 Guarding</string>
+    <string name="status_active">Active</string>
+    <string name="status_new_locations">%1$s · %2$d new location(s)%3$s · %4$s</string>
+    <string name="status_synced"> · synced</string>
+    <string name="status_last_check">%1$s · last check %2$s</string>
+    <string name="notification_running_title">Tag Tracker is running</string>
+
+    <!-- Settings Activity -->
+    <string name="settings_title">Tag Tracker setup</string>
+    <string name="settings_loading">Loading…</string>
+    <string name="settings_welcome">Set up Tag Tracker</string>
+    <string name="settings_intro">Find Hub shows only your tag\'s last spot. This app saves the full history and alerts you if it moves. New here? Read the quick guide first – it explains everything.</string>
+    <string name="settings_guide_btn">📖  How it works (guide)</string>
+    <string name="settings_step_signin">Sign in</string>
+    <string name="settings_step_unlock">Unlock</string>
+    <string name="settings_step_bg">Background</string>
+    <string name="settings_head_1">1. Connect your Google account</string>
+    <string name="settings_note_1">Google needs TWO things, both on Google\'s own pages (the app never sees your password or PIN): your account sign-in, and a one-time screen-lock check that releases the keys to DECRYPT your tag locations. Google requires that second check for end-to-end encryption – no app can skip it. Tap the one button below and just follow the prompts; it walks you through both and you won\'t need to repeat it. Updating the app later does NOT log you out.</string>
+    <string name="settings_connect_guided">🔗  Connect Google account (guided)</string>
+    <string name="settings_note_individual">Prefer to do the two steps yourself? The individual buttons are below.</string>
+    <string name="settings_step_1_title">%1$sStep 1: Sign in%2$s</string>
+    <string name="settings_signin_again">Sign in again</string>
+    <string name="settings_signin_google">Sign in to Google</string>
+    <string name="settings_step_2_title">%1$sStep 2: Unlock encryption (needed to see locations)</string>
+    <string name="settings_unlock_again">Unlock again</string>
+    <string name="settings_unlock_keys">Unlock encryption keys</string>
+    <string name="settings_warn_unlocked">⚠ You\'re signed in and your tags are listed, but the map will stay empty until you finish step 2. Tap “Unlock encryption keys” and enter your phone\'s screen lock.</string>
+    <string name="settings_all_set">✓ All set – the app can read and decrypt your tags.</string>
+    <string name="settings_or">— or —</string>
+    <string name="settings_option_b">Option B: If the steps above fail, run the desktop setup once on a PC (python -m server.manage google-login), copy the resulting data/google_secrets.json to this phone, and import it here. No re-login needed on the phone.</string>
+    <string name="settings_import_btn">Import login file (google_secrets.json)</string>
+    <string name="settings_head_2">2. Background checking</string>
+    <string name="settings_note_2">The app checks Find Hub in the background with Android WorkManager (Google\'s battery-efficient scheduler) and saves every location. It uses almost no battery while idle: it only wakes for a few seconds per check, needs a network connection, and closes the connection in between. It uses NO device-location permission (locations come from Google\'s network, not your phone\'s GPS). Android\'s minimum interval is 15 minutes; pick a longer one to use even less battery.</string>
+    <string name="settings_currently_every">Currently every %1$d minutes.</string>
+    <string name="settings_min_suffix">%1$d min</string>
+    <string name="settings_note_interval">Longer interval = less battery. 240 min is the battery-saver option. See exactly what the app does and its tiny active time in Battery &amp; activity:</string>
+    <string name="settings_battery_activity_btn">Battery &amp; activity →</string>
+    <string name="settings_battery_ignore_note">Optional: only if your phone (Xiaomi/Samsung/etc.) aggressively kills background apps, allow unrestricted running so checks aren\'t skipped. Not required on most phones.</string>
+    <string name="settings_battery_ignore_btn">Allow unrestricted background (optional)</string>
+    <string name="settings_battery_ignore_ok">✓ Unrestricted background running is allowed.</string>
+    <string name="settings_bg_notify_on">✓ A status notification shows while the app runs in the background.</string>
+    <string name="settings_bg_notify_off">Background status notification is off.</string>
+    <string name="settings_bg_notify_hide">Hide background notification</string>
+    <string name="settings_bg_notify_show">Show background notification</string>
+    <string name="settings_swipe_note">Closing the app (swiping it away) does NOT stop tracking – it keeps checking and saving in the background, which is what you want. Use the button below only when you want to FULLY stop it.</string>
+    <string name="settings_tracking_stopped">⏸ Background tracking is STOPPED. No locations are being saved.</string>
+    <string name="settings_resume_tracking">Resume background tracking</string>
+    <string name="settings_stop_tracking">⏹ Stop tracking (full exit)</string>
+    <string name="settings_head_3">3. Storage &amp; sync</string>
+    <string name="settings_note_3">Your locations are ALWAYS saved on the phone first – they can never be lost, even with no internet or if Drive is busy. Google Drive is an extra cloud copy on top. Choose:\n• CONTINUOUS SYNC (recommended): phone + Google Drive, syncs after each check. If offline or rate-limited, it just retries later – nothing is lost.\n• LOCAL ONLY: keep everything on the phone, no cloud (turn both options below off).</string>
+    <string name="settings_drive_auto_on">✓ DEFAULT automatic sync is ON (folder ‘TagTracker’ in your Google account).</string>
+    <string name="settings_drive_auto_off">DEFAULT: automatic sync to a ‘TagTracker’ folder in your own Google account – no file picking, and it comes back automatically when you sign in on another phone.</string>
+    <string name="settings_sync_default_now">Sync default folder now</string>
+    <string name="settings_use_default_sync">Use automatic default sync (recommended)</string>
+    <string name="settings_see_drive">See what\'s in my Drive</string>
+    <string name="settings_turn_off_drive_auto">Turn off automatic sync</string>
+    <string name="settings_or_custom">— or use a CUSTOM file (any account / location) —\nIn the picker, tap ☰ and choose GOOGLE DRIVE (not phone storage), pick a folder, and name it e.g. TagTracker-history.csv.</string>
+    <string name="settings_drive_custom_on">✓ Auto-syncing to your Drive file.%1$s</string>
+    <string name="settings_last_sync_prefix">  Last sync: %1$s</string>
+    <string name="settings_no_sync_yet">  (no sync yet)</string>
+    <string name="settings_sync_drive_now">Sync to Drive now</string>
+    <string name="settings_restore_drive_file">Restore history from a Drive file</string>
+    <string name="settings_choose_diff_file">Choose a different file</string>
+    <string name="settings_turn_off_custom_drive">Turn off Drive sync</string>
+    <string name="settings_choose_drive_file">Choose Google Drive file</string>
+    <string name="settings_head_4">4. Your tags</string>
+    <string name="settings_refresh_tags">Refresh tag list from Google</string>
+    <string name="settings_check_loc_now">Check for locations now</string>
+    <string name="settings_head_5">5. Theft / guard alerts</string>
+    <string name="settings_note_5">Turn this ON when the bike is parked. If a tag MOVES more than ~150 m, you get a LOUD notification with a Maps link – so you can act fast if it\'s stolen. Uses the same background checks, so no extra battery. Tip: if it\'s stolen, share the live location and history with the police – don\'t confront the thief yourself.</string>
+    <string name="settings_guard_on">✓ Guard mode is ON – you\'ll be alerted if a tag moves.</string>
+    <string name="settings_guard_off">Guard mode is off.</string>
+    <string name="settings_guard_turn_off">Turn OFF guard mode</string>
+    <string name="settings_guard_turn_on">Turn ON guard mode</string>
+    <string name="settings_head_6">6. App lock (this phone only)</string>
+    <string name="settings_note_6">Protect the app with a password so no one who picks up your phone can open your tracker. The password and hint are stored ONLY on this phone – never sent to Google or Drive, so they can\'t be recovered from anywhere else. If you forget it and the hint doesn\'t help, reinstall the app.</string>
+    <string name="settings_applock_on">✓ App lock is ON.</string>
+    <string name="settings_change_app_pw">Change app password</string>
+    <string name="settings_turn_off_applock">Turn off app lock</string>
+    <string name="settings_set_app_pw">Set an app password</string>
+    <string name="settings_head_legal">Legal &amp; privacy</string>
+    <string name="settings_note_legal">Not affiliated with Google. This app uses an UNOFFICIAL method to read the Find network – Google may block it at any time, and it may violate Google\'s Terms of Service. For tracking YOUR OWN property only, never a person without consent. Your data stays on your phone and your own Google Drive; nothing is sent to the developer. Provided AS IS, no warranty. Open-source (GPL-3.0), built on GoogleFindMyTools.</string>
+    <string name="settings_read_legal_btn">Read full disclaimer &amp; privacy</string>
+    <string name="settings_open_map">Open map</string>
+    <string name="settings_help_btn">Help</string>
+
+    <string name="toast_signed_in_unlock">Signed in – now confirm your screen lock to unlock locations</string>
+    <string name="toast_tracking_resumed">Tracking resumed</string>
+    <string name="toast_tracking_stopped">Background tracking stopped. Tap Resume to start again.</string>
+    <string name="toast_checking_find_hub">Checking Find Hub…</string>
+    <string name="toast_drive_sync_setup">Drive sync set up</string>
+    <string name="toast_no_picker">No file picker available</string>
+    <string name="dialog_close">Close</string>
+    <string name="dialog_save">Save</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="hint_new_pw">New app password (min 4)</string>
+    <string name="hint_recovery">Recovery hint (e.g. ‘usual PIN’)</string>
+    <string name="title_set_app_pw">Set app password</string>
+    <string name="toast_pw_short">Password too short</string>
+    <string name="toast_applock_set">App lock set</string>
+    <string name="dialog_legal_title">Legal, disclaimer &amp; privacy</string>
+    <string name="dialog_drive_title">Your data in Google Drive</string>
+
+    <!-- Lock Activity -->
+    <string name="lock_enter_pw">Enter app password</string>
+    <string name="lock_pw_hint">App password</string>
+    <string name="lock_unlock_btn">Unlock</string>
+    <string name="lock_forgot_btn">Forgot? Show hint</string>
+    <string name="lock_no_hint">No hint was set for this phone.</string>
+    <string name="lock_hint_prefix">Hint: %1$s</string>
+    <string name="lock_wrong_pw">Wrong password</string>
+
+    <!-- Battery Activity -->
+    <string name="battery_title">Battery &amp; activity</string>
+    <string name="battery_low_title">Very low battery use</string>
+    <string name="battery_low_note">Tag Tracker is built to sip battery:\n• It uses NO GPS and NO location permission (positions come from Google\'s network).\n• It wakes only briefly every %1$d minutes, then sleeps.\n• It closes its network connection between checks.\n• Android (WorkManager) batches the checks at efficient moments.</string>
+    <string name="battery_head_today">Today</string>
+    <string name="battery_checks_today">Checks today: %1$d</string>
+    <string name="battery_active_time">Total active time today: ~%1$s seconds  (the rest of the day it\'s asleep)</string>
+    <string name="battery_avg_check">Average per check: ~%1$s s</string>
+    <string name="battery_open_settings">Open Android battery settings for this app</string>
+    <string name="battery_head_recent">Recent checks</string>
+    <string name="battery_no_checks">No checks logged yet. They appear here after the app runs in the background.</string>
+
+    <!-- License Activity -->
+    <string name="license_title">Tag Tracker Pro</string>
+    <string name="license_active">✅ Pro is active</string>
+    <string name="license_free">Free version</string>
+    <string name="license_active_desc">All features are unlocked on this phone. Thank you!</string>
+    <string name="license_free_desc">FREE: 1 tag on 1 device, last 24 hours of history.\n\nFor 2+ tags and UNLIMITED-day tracking, contact the developer for a key.</string>
+    <string name="license_unlocks_head">A key unlocks</string>
+    <string name="license_unlocks_note">• Track multiple tags\n• Unlimited history (day → year) &amp; trip replay\n• CSV / GPX export\n• Theft / guard movement alerts\n• Google Drive auto-sync</string>
+    <string name="license_device_id_head">Your Device ID</string>
+    <string name="license_device_id_note">A Pro key is tied to THIS phone. Send this ID when you request a key:</string>
+    <string name="license_copy_id">Copy Device ID</string>
+    <string name="license_copied_toast">Device ID copied</string>
+    <string name="license_contact_head">Contact developer for a key</string>
+    <string name="license_email_btn">✉ Contact developer by Email</string>
+    <string name="license_share_btn">💬 Contact by SMS / WhatsApp / other</string>
+    <string name="license_enter_key_head">Enter your Pro key</string>
+    <string name="license_paste_hint">Paste license key</string>
+    <string name="license_unlock_btn">Unlock Pro</string>
+    <string name="license_remove_btn">Remove license from this phone</string>
+
+    <!-- Google Auth Activity -->
+    <string name="auth_title_signin">Sign in to Google</string>
+    <string name="auth_title_unlock">Unlock Find Hub encryption</string>
+    <string name="auth_unlock_toast">Sign in again to unlock encryption</string>
+    <string name="auth_connected_toast">Connected %1$s</string>
+    <string name="auth_unlocked_toast">Encryption unlocked</string>
+
+    <!-- Main & Help Activity -->
+    <string name="help_title_activity">How it works</string>
+    <string name="main_share_chooser">Share location</string>
+    <string name="main_loc_updated">Location updated – saved to history</string>
+    <string name="main_no_new_loc">No new location right now</string>
+    <string name="main_ringing">Ringing the tag…</string>
+    <string name="main_save_share_chooser">Save or share %1$s</string>
+    <string name="main_export_failed">Export failed: %1$s</string>
+    <string name="main_restored_drive">Restored %1$d location(s) from your Google Drive</string>
+    <string name="menu_check_now">Check for locations now</string>
+    <string name="menu_refresh">Refresh</string>
+    <string name="menu_settings">Setup &amp; settings</string>
+    <string name="menu_battery">Battery &amp; activity</string>
+    <string name="menu_pro">Tag Tracker Pro</string>
+    <string name="menu_updates">Check for updates</string>
+    <string name="menu_help">Help</string>
+    <string name="toast_checking_updates">Checking for updates…</string>
+
+    <!-- Update Checker -->
+    <string name="update_cant_read">Couldn\'t read the latest release.</string>
+    <string name="update_latest_version">You\'re on the latest version (%1$s).</string>
+    <string name="update_check_failed">Update check failed: %1$s</string>
+    <string name="update_available_title">Update available</string>
+    <string name="update_available_msg">A new version (%1$s) is available.\n\nUpdating installs over the current app and keeps everything — your Google login, license and saved history stay, and you will NOT have to sign in again.</string>
+    <string name="update_whats_new">\n\nWhat\'s new:\n</string>
+    <string name="update_download_install">Download &amp; install</string>
+    <string name="update_later">Later</string>
+    <string name="update_allow_title">Allow updates</string>
+    <string name="update_allow_msg">To install the update, allow Tag Tracker to install apps on the next screen, then tap Download &amp; install again.</string>
+    <string name="update_open_settings">Open settings</string>
+    <string name="update_open_settings_toast">Open Settings → Apps → Tag Tracker → Install unknown apps.</string>
+    <string name="update_downloading">Downloading update…</string>
+    <string name="update_download_failed">Download failed: %1$s</string>
+
+    <!-- Additional Settings Strings -->
+    <string name="settings_sync_pulled">Default sync on – pulled %1$d saved location(s) from Drive</string>
+    <string name="settings_sync_ready">Default sync on – Drive folder ready</string>
+    <string name="settings_sync_need_google">Automatic sync needs the Google sign-in first: %1$s</string>
+    <string name="settings_synced_drive">Synced to Drive</string>
+    <string name="settings_sync_failed">Sync failed: %1$s</string>
+    <string name="settings_tags_found">%1$d tag(s) found</string>
+    <string name="settings_tags_list_error">Could not list tags: %1$s</string>
+    <string name="settings_drive_reading">📁 reading Drive status…</string>
+    <string name="settings_drive_not_yet">not yet</string>
+    <string name="settings_drive_summary_line">📁 %1$s  ·  %2$d location(s) saved  ·  syncs %3$s  ·  last sync: %4$s</string>
+    <string name="settings_drive_last_error">\n⚠ last error: %1$s</string>
+    <string name="settings_drive_status_unavailable">Drive status unavailable: %1$s</string>
+    <string name="settings_checking_drive">Checking Google Drive…</string>
+    <string name="settings_drive_cant_read">Couldn\'t read Drive: %1$s</string>
+    <string name="settings_drive_folder_label">Folder: %1$s\n</string>
+    <string name="settings_drive_files_total">%1$d file(s), %2$d KB total\n\n</string>
+    <string name="settings_drive_empty">(empty — nothing synced yet. Tap ‘Sync default folder now’.)</string>
+    <string name="settings_drive_verify_failed">Verify failed: %1$s</string>
+    <string name="settings_import_login_ok">Login imported – signed in and unlocked. Tap Check now.</string>
+    <string name="settings_import_login_no_keys">Login imported, but it has no encryption key (unlock part). Locations may not decrypt.</string>
+    <string name="settings_import_failed">Import failed: %1$s</string>
+    <string name="settings_restore_success">Restored %1$d location(s) from the file</string>
+    <string name="settings_restore_failed">Restore failed: %1$s</string>
+
+    <!-- Additional License Strings -->
+    <string name="license_instructions">Send your Device ID (above). You\'ll receive a key – paste it below to unlock this phone.</string>
+    <string name="license_note_reason">Note: %1$s</string>
+    <string name="license_removed_toast">License removed</string>
+    <string name="license_footer">\nOpen-source (GPL-3.0). Contact: %1$s</string>
+    <string name="license_email_body">Hello, I would like a Tag Tracker Pro key.\n\nMy Device ID: %1$s\n\n(App: Tag Tracker)</string>
+    <string name="license_email_subject">Tag Tracker Pro key request</string>
+    <string name="license_email_chooser">Request Pro key by email</string>
+    <string name="license_no_email_toast">No email app found. Email %1$s with your Device ID.</string>
+    <string name="license_share_text">Tag Tracker Pro key request. My Device ID: %1$s (send to %2$s)</string>
+    <string name="license_share_chooser">Request Pro key via SMS / WhatsApp / other</string>
+    <string name="license_share_fallback_toast">Send your Device ID to %1$s</string>
+    <string name="license_paste_first">Paste your key first</string>
+    <string name="license_unlocked_toast">Pro unlocked – thank you!</string>
+    <string name="license_invalid_key_toast">Key not valid: %1$s</string>
+
+    <!-- Additional Auth Strings -->
+    <string name="auth_retry_limit_title">Couldn\'t finish sign-in</string>
+    <string name="auth_retry_limit_msg">Sign-in didn\'t complete. To protect your account the app stopped retrying. You can try again, or use the more reliable Option B: import a login file made on a PC (see Setup).</string>
+    <string name="auth_error_title">Something went wrong</string>
+    <string name="dialog_ok">OK</string>
+
+    <!-- Additional Battery Strings -->
+    <string name="battery_check_new">  ·  +%1$d new</string>
+    <string name="battery_check_failed">  ·  (failed)</string>
 </resources>

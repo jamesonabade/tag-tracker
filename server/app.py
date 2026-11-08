@@ -196,6 +196,11 @@ def login_page():
     return FileResponse(WEB_DIR / "login.html")
 
 
+@app.get("/help")
+def help_page():
+    return FileResponse(WEB_DIR / "help.html")
+
+
 @app.get("/health")
 def health():
     return {"ok": True}

@@ -116,7 +116,7 @@ public class MainActivity extends Activity {
                 Intent i = new Intent(Intent.ACTION_SEND);
                 i.setType("text/plain");
                 i.putExtra(Intent.EXTRA_TEXT, text);
-                startActivity(Intent.createChooser(i, "Share location"));
+                startActivity(Intent.createChooser(i, getString(R.string.main_share_chooser)));
             });
         }
 
@@ -150,7 +150,7 @@ public class MainActivity extends Activity {
             new Thread(() -> {
                 try {
                     int n = TagApp.py(MainActivity.this).callAttr("locate_now", deviceId).toInt();
-                    toastUi(n > 0 ? "Location updated – saved to history" : "No new location right now");
+                    toastUi(n > 0 ? getString(R.string.main_loc_updated) : getString(R.string.main_no_new_loc));
                     DriveBackup.backupIfDue(MainActivity.this, n > 0);
                 } catch (Exception e) {
                     toastUi(msg(e));
@@ -163,7 +163,7 @@ public class MainActivity extends Activity {
             new Thread(() -> {
                 try {
                     TagApp.py(MainActivity.this).callAttr("play_sound", deviceId);
-                    toastUi("Ringing the tag…");
+                    toastUi(getString(R.string.main_ringing));
                 } catch (Exception e) {
                     toastUi(msg(e));
                 }
@@ -198,10 +198,10 @@ public class MainActivity extends Activity {
                     share.setType(format.equals("gpx") ? "application/gpx+xml" : "text/csv");
                     share.putExtra(Intent.EXTRA_STREAM, uri);
                     share.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    runOnUiThread(() -> startActivity(Intent.createChooser(share, "Save or share " + name)));
+                    runOnUiThread(() -> startActivity(Intent.createChooser(share, getString(R.string.main_save_share_chooser, name))));
                 } catch (Exception e) {
                     runOnUiThread(() -> Toast.makeText(MainActivity.this,
-                            "Export failed: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                            getString(R.string.main_export_failed, msg(e)), Toast.LENGTH_LONG).show());
                 }
             }).start();
         }
@@ -218,7 +218,7 @@ public class MainActivity extends Activity {
             try {
                 int got = TagApp.py(this).callAttr("drive_default_restore").toInt();
                 if (got > 0) {
-                    toastUi("Restored " + got + " location(s) from your Google Drive");
+                    toastUi(getString(R.string.main_restored_drive, got));
                     runOnUiThread(() -> { if (web != null) web.reload(); });
                 }
             } catch (Exception ignored) {
@@ -244,13 +244,13 @@ public class MainActivity extends Activity {
 
     @Override
     public boolean onCreateOptionsMenu(android.view.Menu menu) {
-        menu.add(0, 1, 0, "Check for locations now");
-        menu.add(0, 2, 0, "Refresh");
-        menu.add(0, 3, 0, "Setup & settings");
-        menu.add(0, 6, 0, "Battery & activity");
-        menu.add(0, 5, 0, "Tag Tracker Pro");
-        menu.add(0, 7, 0, "Check for updates");
-        menu.add(0, 4, 0, "Help");
+        menu.add(0, 1, 0, getString(R.string.menu_check_now));
+        menu.add(0, 2, 0, getString(R.string.menu_refresh));
+        menu.add(0, 3, 0, getString(R.string.menu_settings));
+        menu.add(0, 6, 0, getString(R.string.menu_battery));
+        menu.add(0, 5, 0, getString(R.string.menu_pro));
+        menu.add(0, 7, 0, getString(R.string.menu_updates));
+        menu.add(0, 4, 0, getString(R.string.menu_help));
         return true;
     }
 
@@ -259,7 +259,7 @@ public class MainActivity extends Activity {
         switch (item.getItemId()) {
             case 1:
                 PollWorker.runNow(this);
-                Toast.makeText(this, "Checking Find Hub…", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_checking_find_hub), Toast.LENGTH_SHORT).show();
                 return true;
             case 2:
                 web.reload();
@@ -277,7 +277,7 @@ public class MainActivity extends Activity {
                 startActivity(new Intent(this, BatteryActivity.class));
                 return true;
             case 7:
-                Toast.makeText(this, "Checking for updates…", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.toast_checking_updates), Toast.LENGTH_SHORT).show();
                 UpdateChecker.check(this, true);
                 return true;
         }
@@ -290,6 +290,11 @@ public class MainActivity extends Activity {
         // App lock gate: require the app password (this phone only) once per launch.
         if (TagApp.hasAppLock(this) && !TagApp.appUnlocked) {
             startActivity(new Intent(this, LockActivity.class));
+            return;
+        }
+        // Immediately refresh the webview state (licenses, tags, Google account status) without needing to restart the app
+        if (web != null) {
+            web.evaluateJavascript("if (window.refreshApp) window.refreshApp(); else if (typeof refresh === 'function') refresh(); else location.reload();", null);
         }
     }
 

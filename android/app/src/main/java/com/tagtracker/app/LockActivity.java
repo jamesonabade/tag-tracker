@@ -26,7 +26,7 @@ public class LockActivity extends Activity {
             finish();
             return;
         }
-        setTitle("Tag Tracker");
+        setTitle(getString(R.string.app_name));
 
         int pad = dp(24);
         LinearLayout root = new LinearLayout(this);
@@ -35,18 +35,18 @@ public class LockActivity extends Activity {
         root.setPadding(pad, pad, pad, pad);
 
         TextView title = new TextView(this);
-        title.setText("Enter app password");
+        title.setText(getString(R.string.lock_enter_pw));
         title.setTextSize(20);
         title.setPadding(0, 0, 0, dp(16));
         root.addView(title);
 
         EditText input = new EditText(this);
-        input.setHint("App password");
+        input.setHint(getString(R.string.lock_pw_hint));
         input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         root.addView(input, wide());
 
         Button unlock = new Button(this);
-        unlock.setText("Unlock");
+        unlock.setText(getString(R.string.lock_unlock_btn));
         unlock.setAllCaps(false);
         root.addView(unlock, wide());
 
@@ -55,12 +55,12 @@ public class LockActivity extends Activity {
         root.addView(hint);
 
         Button forgot = new Button(this);
-        forgot.setText("Forgot? Show hint");
+        forgot.setText(getString(R.string.lock_forgot_btn));
         forgot.setAllCaps(false);
         forgot.setBackground(null);
         forgot.setOnClickListener(v -> {
             String h = TagApp.appHint(this);
-            hint.setText(h.isEmpty() ? "No hint was set for this phone." : "Hint: " + h);
+            hint.setText(h.isEmpty() ? getString(R.string.lock_no_hint) : getString(R.string.lock_hint_prefix, h));
         });
         root.addView(forgot);
 
@@ -70,7 +70,7 @@ public class LockActivity extends Activity {
                 finish();
             } else {
                 input.setText("");
-                Toast.makeText(this, "Wrong password", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, getString(R.string.lock_wrong_pw), Toast.LENGTH_SHORT).show();
             }
         };
         unlock.setOnClickListener(v -> tryUnlock.run());

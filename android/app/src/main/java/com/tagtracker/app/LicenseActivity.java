@@ -24,7 +24,7 @@ import org.json.JSONObject;
  * verification is offline. This app is open-source (GPL) — the key is a convenience/honour gate.
  */
 public class LicenseActivity extends Activity {
-    static final String CONTACT_EMAIL = "meshkat4u@gmail.com";
+    static final String CONTACT_EMAIL = "jamesonabade@gmail.com";
 
     private String deviceId;
     private LinearLayout root;
@@ -32,7 +32,7 @@ public class LicenseActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("Tag Tracker Pro");
+        setTitle(getString(R.string.license_title));
         deviceId = TagApp.deviceId(this);
         ScrollView sc = new ScrollView(this);
         root = new LinearLayout(this);
@@ -55,17 +55,15 @@ public class LicenseActivity extends Activity {
         } catch (Exception ignored) {
         }
 
-        big(pro ? "✅ Pro is active" : "Free version");
-        note(pro ? "All features are unlocked on this phone. Thank you!"
-                : "FREE: 1 tag on 1 device, last 24 hours of history.\n\n"
-                + "For 2+ tags and UNLIMITED-day tracking, contact the developer for a key.");
+        big(pro ? getString(R.string.license_active) : getString(R.string.license_free));
+        note(pro ? getString(R.string.license_active_desc)
+                : getString(R.string.license_free_desc));
 
-        head("A key unlocks");
-        note("• Track multiple tags\n• Unlimited history (day → year) & trip replay\n"
-                + "• CSV / GPX export\n• Theft / guard movement alerts\n• Google Drive auto-sync");
+        head(getString(R.string.license_unlocks_head));
+        note(getString(R.string.license_unlocks_note));
 
-        head("Your Device ID");
-        note("A Pro key is tied to THIS phone. Send this ID when you request a key:");
+        head(getString(R.string.license_device_id_head));
+        note(getString(R.string.license_device_id_note));
         final TextView idv = new TextView(this);
         idv.setText(deviceId);
         idv.setTextIsSelectable(true);
@@ -76,67 +74,66 @@ public class LicenseActivity extends Activity {
         g.setColor(0x1A64748B);
         idv.setBackground(g);
         root.addView(idv);
-        button("Copy Device ID", v -> {
+        button(getString(R.string.license_copy_id), v -> {
             ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE))
                     .setPrimaryClip(ClipData.newPlainText("Device ID", deviceId));
-            toast("Device ID copied");
+            toast(getString(R.string.license_copied_toast));
         });
 
         if (!pro) {
-            head("Contact developer for a key");
-            button("✉ Contact developer by Email", v -> requestByEmail());
-            button("💬 Contact by SMS / WhatsApp / other", v -> requestByShare());
-            note("Send your Device ID (above). You'll receive a key – paste it below to unlock this phone.");
+            head(getString(R.string.license_contact_head));
+            button(getString(R.string.license_email_btn), v -> requestByEmail());
+            button(getString(R.string.license_share_btn), v -> requestByShare());
+            note(getString(R.string.license_instructions));
 
-            head("Enter your Pro key");
+            head(getString(R.string.license_enter_key_head));
             final EditText key = new EditText(this);
-            key.setHint("Paste license key");
+            key.setHint(getString(R.string.license_paste_hint));
             key.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
             root.addView(key);
-            button("Unlock Pro", v -> unlock(key.getText().toString()));
-            if (reason != null && !reason.isEmpty()) note("Note: " + reason);
+            button(getString(R.string.license_unlock_btn), v -> unlock(key.getText().toString()));
+            if (reason != null && !reason.isEmpty()) note(getString(R.string.license_note_reason, reason));
         } else {
-            button("Remove license from this phone", v -> {
+            button(getString(R.string.settings_open_map), v -> finish());
+            button(getString(R.string.license_remove_btn), v -> {
                 TagApp.py(this).callAttr("clear_license");
-                toast("License removed");
+                toast(getString(R.string.license_removed_toast));
                 render();
             });
         }
 
-        note("\nOpen-source (GPL-3.0). Contact: " + CONTACT_EMAIL);
+        note(getString(R.string.license_footer, CONTACT_EMAIL));
     }
 
     private String emailBody() {
-        return "Hello, I would like a Tag Tracker Pro key.\n\nMy Device ID: " + deviceId
-                + "\n\n(App: Tag Tracker)";
+        return getString(R.string.license_email_body, deviceId);
     }
 
     private void requestByEmail() {
         Intent i = new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:" + CONTACT_EMAIL));
-        i.putExtra(Intent.EXTRA_SUBJECT, "Tag Tracker Pro key request");
+        i.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.license_email_subject));
         i.putExtra(Intent.EXTRA_TEXT, emailBody());
         try {
-            startActivity(Intent.createChooser(i, "Request Pro key by email"));
+            startActivity(Intent.createChooser(i, getString(R.string.license_email_chooser)));
         } catch (Exception e) {
-            toast("No email app found. Email " + CONTACT_EMAIL + " with your Device ID.");
+            toast(getString(R.string.license_no_email_toast, CONTACT_EMAIL));
         }
     }
 
     private void requestByShare() {
         Intent i = new Intent(Intent.ACTION_SEND);
         i.setType("text/plain");
-        i.putExtra(Intent.EXTRA_TEXT, "Tag Tracker Pro key request. My Device ID: " + deviceId
-                + " (send to " + CONTACT_EMAIL + ")");
+        i.putExtra(Intent.EXTRA_TEXT, getString(R.string.license_share_text, deviceId, CONTACT_EMAIL));
         try {
-            startActivity(Intent.createChooser(i, "Request Pro key via SMS / WhatsApp / other"));
+            startActivity(Intent.createChooser(i, getString(R.string.license_share_chooser)));
         } catch (Exception e) {
-            toast("Send your Device ID to " + CONTACT_EMAIL);
+            toast(getString(R.string.license_share_fallback_toast, CONTACT_EMAIL));
         }
     }
 
     private void unlock(String key) {
         if (key == null || key.trim().isEmpty()) {
-            toast("Paste your key first");
+            toast(getString(R.string.license_paste_first));
             return;
         }
         new Thread(() -> {
@@ -144,9 +141,10 @@ public class LicenseActivity extends Activity {
                 JSONObject r = new JSONObject(TagApp.py(this).callAttr("set_license", key.trim(), deviceId).toString());
                 runOnUiThread(() -> {
                     if (r.optBoolean("licensed")) {
-                        toast("Pro unlocked – thank you!");
+                        toast(getString(R.string.license_unlocked_toast));
+                        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(this::finish, 1200);
                     } else {
-                        toast("Key not valid: " + r.optString("reason", "unknown"));
+                        toast(getString(R.string.license_invalid_key_toast, r.optString("reason", "unknown")));
                     }
                     render();
                 });

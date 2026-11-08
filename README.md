@@ -1,196 +1,144 @@
 # Tag Tracker
 
-**🌐 Website:** https://shekh-muhsen.github.io/tag-tracker-web/ &nbsp;·&nbsp;
-**⬇ Download APK:** [OneDrive folder](https://1drv.ms/f/c/d253a14c69792d4f/IgD2Wvb7ZuMkRYcGL9R43zagAfLFCZ9MhQ_tpxYC5Lf0UwM?e=tLMbGT) (updated time to time) or [GitHub Releases](../../releases) &nbsp;·&nbsp;
-**Source:** this repo (open-source, GPL-3.0)
+**🌐 Site:** https://shekh-muhsen.github.io/tag-tracker-web/ &nbsp;·&nbsp;
+**⬇ Baixar APK:** [Releases do GitHub](../../releases) &nbsp;·&nbsp;
+**Licença:** Código aberto, GPL-3.0
 
-Keeps the **full location history** of your Google **Find Hub** tags and shows it on a map.
-The Find Hub app only shows where a tag is *right now*. Tag Tracker checks Find Hub every few minutes,
-**saves every location it gets**, and lets you look back over today, 2 days, 7 days, 30 days, 90 days, a
-full year, or any date range you choose.
+Mantém o **histórico completo de localização** das suas tags da rede **Google Encontre Meu Dispositivo (Find Hub)** e exibe o trajeto detalhado no mapa.
 
-- 🌐 **Web app** with login. Shows the travel path on a map, lets you replay the trip, gives distance and time stats, and exports CSV or GPX files.
-- 📱 **Android app** (`android/`). GitHub Actions builds the APK automatically.
-- 🔒 Private by default. Your locations and Google tokens stay on your own server, in `data/`.
+O aplicativo oficial do Google mostra apenas onde a tag está *neste exato momento*. O **Tag Tracker** consulta a rede do Google a cada poucos minutos, **armazena cada coordenada recebida** e permite consultar o histórico de hoje, últimos 2 dias, 7 dias, 30 dias, 90 dias, 1 ano inteiro ou qualquer período personalizado.
 
-## How it works
+- 📱 **Aplicativo Android Autônomo** (`android/`): Funciona 100% no próprio celular, consulta em segundo plano sem precisar de servidor ligado, faz backup no Google Drive e inclui modo vigia/antifurto.
+- 🌐 **Painel Web com Login**: Exibe a rota no mapa interativo, permite animação/replay do percurso, estatísticas de velocidade, distância e tempo, além de exportação em CSV e GPX.
+- 🔒 **Privacidade Total**: Suas localizações e credenciais do Google nunca saem do seu próprio aparelho ou servidor local.
+
+---
+
+## Como Funciona
 
 ```
-Tag ──BLE──▶ nearby Android phones ──▶ Google Find Hub (end-to-end encrypted)
-                                             │  every N minutes
-                                             ▼
-                          Tag Tracker server (this repo, runs on your PC / VPS / Raspberry Pi)
-                          • signs in to your Google account (one time)
-                          • decrypts the reports and stores them in SQLite
-                                             │
-                               web browser  /  Android app  (login required)
+Tag ──BLE──▶ Celulares Android próximos ──▶ Google Find Hub (criptografia de ponta a ponta)
+                                                  │  a cada N minutos
+                                                  ▼
+                               Aplicativo Android / Servidor Tag Tracker
+                               • Conecta à conta Google (uma única vez)
+                               • Descriptografa com o bloqueio de tela e salva no SQLite
+                                                  │
+                                     Mapa Interativo e Alertas
 ```
 
-Google has no public Find Hub API. The server uses the open-source
-[GoogleFindMyTools](https://github.com/leonboe1/GoogleFindMyTools), which works like the official Find Hub app does.
+O Google não oferece uma API pública para a rede Find. O projeto utiliza o módulo open-source [GoogleFindMyTools](https://github.com/leonboe1/GoogleFindMyTools), funcionando da mesma maneira que o aplicativo oficial Encontre Meu Dispositivo.
 
-**Things to know**
+### Informações Importantes
 
-- History starts **when you start the server**. Google does not keep old history, so earlier trips can't be loaded.
-- The server only records **while it is running**. For unbroken history, run it on a machine that stays on, such as a cheap VPS, a Raspberry Pi or an always-on PC.
-- The tag reports a location only when an Android phone passes near it. Quiet areas give fewer points.
-- On your phone, open Find Hub settings and turn on **"Find your offline devices" → "With network in all areas"** to get the most reports.
-- This uses an unofficial API, so a Google change could break it for a while. If it does, update the pinned `GoogleFindMyTools` commit in `setup.ps1`, `setup.sh` and `Dockerfile`.
-- Don't set the check interval too short. Every **10 minutes** (the default) is a sensible value.
+- O histórico começa a ser gravado **a partir do momento em que o aplicativo/servidor é configurado**. O Google não armazena o histórico retroativo.
+- A tag só atualiza sua posição quando algum celular Android passa perto dela via Bluetooth. Áreas com pouco movimento atualizam com menor frequência.
+- No seu celular Android, abra as configurações do **Encontre Meu Dispositivo** e ative **"Encontrar dispositivos offline" → "Com rede em todas as áreas"** para obter a máxima taxa de localização.
+- O intervalo de verificação padrão recomendado é de **15 minutos** (ideal para balancear atualizações frequentes e economia de bateria).
 
-## 1. Install the server (Windows)
+---
 
-You need Python 3.11+, Git and Google Chrome.
+## 📱 Aplicativo Android (Modo Autônomo — Sem Servidor)
+
+O aplicativo Android é **autônomo e independente**: conecta-se diretamente ao Google, consulta a rede em segundo plano via `WorkManager`, salva as localizações no banco de dados SQLite interno do aparelho e permite sincronização automática com o seu **Google Drive**.
+
+### Configuração Inicial no Celular
+
+Ao abrir o app pela primeira vez:
+1. **Conectar conta Google:** Faça login com a mesma conta Google onde sua tag foi cadastrada.
+2. **Desbloquear chaves de criptografia:** Digite o PIN, padrão ou senha de bloqueio de tela do celular na página do Google. Isso libera as chaves para que seu celular consiga descriptografar a localização da tag.
+3. **Verificação em segundo plano:** Escolha o intervalo (mínimo de 15 minutos) e conceda permissão para execução em segundo plano sem otimização de bateria.
+4. **Backup no Google Drive (Recomendado):** Escolha ou crie um arquivo no seu Google Drive (ex: `TagTracker-historico.csv`). O app atualizará seu histórico automaticamente.
+
+Depois, clique em **Abrir mapa** para visualizar o mapa interativo, consultar rotas e reproduzir trajetos.
+
+---
+
+## 🔑 Sistema de Licenciamento e Vendas
+
+O projeto possui um módulo nativo de licenciamento criptográfico **Ed25519** offline:
+
+- **Controle de Licenças:** Cada celular possui um **ID do Dispositivo** exclusivo.
+
+---
+
+## 🖥️ Instalação do Servidor Web (Opcional — PC / Linux / Docker)
+
+Caso queira hospedar uma central própria em um computador, VPS ou Raspberry Pi:
+
+### Windows
+
+Pré-requisitos: Python 3.11+, Git e Google Chrome instalado.
 
 ```powershell
-git clone https://github.com/<you>/tag-tracker.git
+# Clonar o repositório
+git clone https://github.com/<seu-usuario>/tag-tracker.git
 cd tag-tracker
+
+# Instalação automática
 powershell -ExecutionPolicy Bypass -File setup.ps1
-```
 
-Create your web login:
+# Criar usuário de acesso ao painel web
+.\.venv\Scripts\python -m server.manage adduser meu_usuario
 
-```powershell
-.\.venv\Scripts\python -m server.manage adduser myname
-```
-
-Connect your Google account (one time only):
-
-```powershell
+# Conectar a conta Google (abre o Chrome para login e PIN)
 .\.venv\Scripts\python -m server.manage google-login
-```
 
-A Chrome window opens. Sign in to the **Google account you use in Find Hub**. Google may also ask for
-your phone's **screen lock PIN or pattern**, which unlocks the encryption key for your tags' locations. The tokens are saved to
-`data/google_secrets.json`. **Keep this file private.** It gives access to your Find Hub.
-
-Start the server:
-
-```powershell
+# Iniciar o servidor
 .\start.ps1
 ```
 
-Open http://localhost:8000 and sign in.
+Acesse `http://localhost:8000` no seu navegador e faça o login.
 
-Want to try the map before connecting your tag? Run `python -m server.manage demo` to add a sample tag with a year of fake history.
-
-### Linux / Raspberry Pi / VPS
+### Linux / Raspberry Pi / Docker
 
 ```sh
 sh setup.sh
-.venv/bin/python -m server.manage adduser myname
-# Headless machines have no Chrome. Run google-login on your Windows PC,
-# then copy data/google_secrets.json into this machine's data/ folder.
+.venv/bin/python -m server.manage adduser meu_usuario
 .venv/bin/python -m server
 ```
 
-Or use Docker: `docker compose up -d`, then run `docker compose exec tracker python -m server.manage adduser myname`.
+Ou via Docker:
+```sh
+docker compose up -d
+docker compose exec tracker python -m server.manage adduser meu_usuario
+```
 
-### Settings (environment variables)
+### Variáveis de Ambiente do Servidor
 
-| Variable | Default | Meaning |
+| Variável | Padrão | Descrição |
 |---|---|---|
-| `TT_POLL_MINUTES` | `10` | How often to check Find Hub |
-| `TT_PORT` | `8000` | Web port |
-| `TT_DATA_DIR` | `./data` | Folder for the database and secrets |
-| `TT_COOKIE_SECURE` | `0` | Set to `1` when you serve the site over HTTPS |
-| `TT_SESSION_DAYS` | `30` | How long a login lasts |
-| `TT_RCLONE_REMOTE` | *(off)* | Google Drive backup target, e.g. `gdrive:TagTracker` |
-| `TT_BACKUP_MINUTES` | `60` | How often to back up |
+| `TT_POLL_MINUTES` | `10` | Intervalo em minutos para consultar o Google Find |
+| `TT_PORT` | `8000` | Porta do servidor web |
+| `TT_DATA_DIR` | `./data` | Pasta do banco de dados SQLite e credenciais |
+| `TT_COOKIE_SECURE` | `0` | Defina como `1` ao usar HTTPS |
+| `TT_SESSION_DAYS` | `30` | Duração da sessão do usuário |
+| `TT_RCLONE_REMOTE` | *(desativado)* | Destino de backup no Google Drive (ex: `gdrive:TagTracker`) |
+| `TT_BACKUP_MINUTES` | `60` | Intervalo de backup em minutos |
 
-## Google Drive backup (keep your history safe online)
+---
 
-The server can copy your data to Google Drive every hour. It uploads:
-- `tracker.db`: the full database, which you can restore on any machine
-- `csv/locations-YYYY-MM.csv`: one file per month that you can open in Google Sheets
+## Comandos Administrativos
 
-Google sign-in tokens are **never** uploaded.
-
-1. Install [rclone](https://rclone.org/downloads/). On Windows, run `winget install Rclone.Rclone`.
-2. Connect it to your Drive: run `rclone config` and choose **n** (new remote). Name it `gdrive`, pick storage **drive**, and leave
-   client id and secret blank. Choose scope **1** (full access) or **3** (`drive.file`, which only sees files rclone creates). Accept the rest,
-   then sign in to Google in the browser that opens.
-3. Turn on the backup before you start the server:
-   ```powershell
-   $env:TT_RCLONE_REMOTE = "gdrive:TagTracker"
-   .\start.ps1
-   ```
-   A `TagTracker` folder appears in your Drive. The status line in the web app shows when the last backup ran.
-
-Other commands: `python -m server.manage backup` uploads a backup now. `python -m server.manage restore` downloads the
-Drive backup onto a new machine. Stop the server before you restore.
-
-With Docker, copy your `rclone.conf` (run `rclone config file` to find it) into `data/`, then set `TT_RCLONE_REMOTE` in `docker-compose.yml`.
-
-## 2. Reach it from your phone and from anywhere
-
-Pick one:
-
-- **Tailscale** (easiest and private): install Tailscale on the server and on your phone. Then use `http://<server-tailscale-name>:8000`.
-- **Cloudflare Tunnel** (a public HTTPS address, no router changes): run `cloudflared tunnel --url http://localhost:8000`, or set up a named tunnel. Then set `TT_COOKIE_SECURE=1`.
-- A VPS with a reverse proxy (Caddy or nginx) and HTTPS.
-
-Don't open port 8000 on your router without HTTPS.
-
-## Android app (works on its own — no server needed)
-
-The Android app is **standalone**: it signs in to Google, checks Find Hub **in the background**, stores the
-history on the phone, and backs it up to **Google Drive**. You do not need to run the Python server for the app.
-(The server above is an optional alternative for people who want an always-on machine and a web login.)
-
-**Install:** open **Actions → Android APK → latest run** in GitHub and download the **TagTracker-apk** artifact
-(or grab the APK from the latest [Release](../../releases)). Unzip if needed, copy to your phone, and install it
-(allow "install unknown apps"). To cut a release with the APK attached: `git tag v2.0 && git push --tags`.
-
-**First run** opens a setup screen:
-1. **Sign in to Google** — a Google page opens; sign in with the account you use in Find Hub.
-2. **Unlock encryption keys** — a Google page asks for your phone's screen lock (PIN/pattern). This releases the
-   keys that decrypt the tag's location. Your password and PIN are typed into Google's own pages; the app never sees them.
-3. **Background checking** — pick how often to check (15 min minimum, an Android limit) and tap **Allow background
-   running** so Android doesn't suspend it.
-4. **Back up to Google Drive** — tap **Choose Google Drive file** and create a file such as `TagTracker-history.csv`
-   inside your Drive. The app overwrites it with your full history every hour. You can open it in Google Sheets.
-
-Then tap **Open map** for the same map, history ranges and trip replay as the web app.
-
-*How it runs offline:* the app bundles the Python location code (via [Chaquopy](https://chaquo.com/chaquopy/)) and
-runs it with Android WorkManager, so checks continue when the app is closed and after a reboot. Because of Android
-battery limits, exact timing varies and the phone must have a network connection when a check runs.
-
-*Note on Drive:* the app writes to **one Drive file you pick**, using the normal file picker, so there is no Google
-Cloud project or API key to set up. It does not need the full server's rclone setup.
-
-*Optional: stable signing.* By default each build is signed with a temporary debug key, so moving to a newer
-build may mean uninstalling the old one first. To avoid that, create a keystore and add these repository secrets:
-`ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD`.
-
-## Admin commands
-
-```
-python -m server.manage adduser <name>   # add a user or reset their password
-python -m server.manage deluser <name>
-python -m server.manage users
-python -m server.manage poll             # fetch locations once
+```powershell
+python -m server.manage adduser <nome>   # Criar usuário ou redefinir senha
+python -m server.manage deluser <nome>   # Remover usuário
+python -m server.manage users            # Listar usuários
+python -m server.manage poll             # Forçar uma consulta imediata às tags
+python -m server.manage demo             # Gerar dados demonstrativos de teste
 ```
 
-## Legal, disclaimer & privacy
+---
 
-**Not affiliated with Google.** Tag Tracker is an independent, open-source project — not created,
-endorsed, or supported by Google LLC. "Google", "Find Hub", "Find My Device" and "Android" are
-trademarks of Google LLC, used nominatively to describe compatibility.
+## Aspectos Legais, Isenção e Privacidade
 
-It reads the Find network with the **unofficial** [GoogleFindMyTools](https://github.com/leonboe1/GoogleFindMyTools).
-Google provides no public API and **may block this at any time**; using an unofficial client **may violate
-Google's Terms of Service**. **Use at your own risk**, including risk to your Google account.
+- **Sem vínculo com o Google:** O Tag Tracker é um projeto independente. "Google", "Find Hub", "Find My Device", "Encontre Meu Dispositivo" e "Android" são marcas registradas da Google LLC.
+- **Uso estritamente patrimonial:** Monitore apenas veículos, objetos e pertences de sua propriedade ou com autorização formal do proprietário. É proibido utilizar para rastrear pessoas sem consentimento.
+- **Privacidade absoluta:** Os dados ficam armazenados exclusivamente no seu próprio celular/servidor e no seu Google Drive pessoal.
+- Para os termos completos, consulte o arquivo [`LEGAL.md`](LEGAL.md).
 
-**Track only your own property** — never a person without their knowledge and consent (illegal in many
-places). If something is stolen, give the location to the **police**; don't confront anyone.
+---
 
-**Privacy:** your data stays on your phone and, if enabled, your own Google Drive. The app has **no servers
-of its own** and sends **no data to the developer** or any third party.
+## Licença
 
-Provided **"AS IS", without warranty**. See [LEGAL.md](LEGAL.md) for the full text.
-
-## License
-
-GPL-3.0, the same license as GoogleFindMyTools, which this project builds on. Full credit to Leon Böttger.
+Distribuído sob os termos da licença **GNU General Public License v3.0 (GPL-3.0)**. Baseado na biblioteca GoogleFindMyTools desenvolvida por Leon Böttger.

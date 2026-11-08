@@ -31,7 +31,7 @@ import java.net.URL;
  */
 public class UpdateChecker {
     private static final String LATEST_API =
-            "https://api.github.com/repos/Shekh-Muhsen/tag-tracker/releases/latest";
+            "https://api.github.com/repos/jamesonabade/tag-tracker/releases/latest";
     private static final String ASSET_NAME = "TagTracker.apk";
 
     /** @param userInitiated true when the user tapped "Check for updates" (so we also report
@@ -45,17 +45,17 @@ public class UpdateChecker {
                 String apkUrl = findApkUrl(rel);
 
                 if (latestTag.isEmpty() || apkUrl == null) {
-                    if (userInitiated) toast(activity, "Couldn't read the latest release.");
+                    if (userInitiated) toast(activity, activity.getString(R.string.update_cant_read));
                     return;
                 }
                 if (!isNewer(latestTag, current)) {
-                    if (userInitiated) toast(activity, "You're on the latest version (" + current + ").");
+                    if (userInitiated) toast(activity, activity.getString(R.string.update_latest_version, current));
                     return;
                 }
                 String notes = rel.optString("body", "");
                 activity.runOnUiThread(() -> promptUpdate(activity, latestTag, apkUrl, notes));
             } catch (Exception e) {
-                if (userInitiated) toast(activity, "Update check failed: " + msg(e));
+                if (userInitiated) toast(activity, activity.getString(R.string.update_check_failed, msg(e)));
             }
         }).start();
     }
@@ -87,17 +87,15 @@ public class UpdateChecker {
     }
 
     private static void promptUpdate(Activity activity, String tag, String apkUrl, String notes) {
-        String msg = "A new version (" + tag + ") is available.\n\n"
-                + "Updating installs over the current app and keeps everything — your Google login, "
-                + "license and saved history stay, and you will NOT have to sign in again.";
+        String msg = activity.getString(R.string.update_available_msg, tag);
         if (notes != null && !notes.trim().isEmpty()) {
-            msg += "\n\nWhat's new:\n" + notes.trim();
+            msg += activity.getString(R.string.update_whats_new) + notes.trim();
         }
         new AlertDialog.Builder(activity)
-                .setTitle("Update available")
+                .setTitle(activity.getString(R.string.update_available_title))
                 .setMessage(msg)
-                .setPositiveButton("Download & install", (d, w) -> ensureCanInstall(activity, apkUrl))
-                .setNegativeButton("Later", null)
+                .setPositiveButton(activity.getString(R.string.update_download_install), (d, w) -> ensureCanInstall(activity, apkUrl))
+                .setNegativeButton(activity.getString(R.string.update_later), null)
                 .show();
     }
 
@@ -106,19 +104,18 @@ public class UpdateChecker {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
                 && !activity.getPackageManager().canRequestPackageInstalls()) {
             new AlertDialog.Builder(activity)
-                    .setTitle("Allow updates")
-                    .setMessage("To install the update, allow Tag Tracker to install apps on the next "
-                            + "screen, then tap Download & install again.")
-                    .setPositiveButton("Open settings", (d, w) -> {
+                    .setTitle(activity.getString(R.string.update_allow_title))
+                    .setMessage(activity.getString(R.string.update_allow_msg))
+                    .setPositiveButton(activity.getString(R.string.update_open_settings), (d, w) -> {
                         try {
                             activity.startActivity(new Intent(
                                     Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
                                     Uri.parse("package:" + activity.getPackageName())));
                         } catch (Exception e) {
-                            toast(activity, "Open Settings → Apps → Tag Tracker → Install unknown apps.");
+                            toast(activity, activity.getString(R.string.update_open_settings_toast));
                         }
                     })
-                    .setNegativeButton("Cancel", null)
+                    .setNegativeButton(activity.getString(R.string.dialog_cancel), null)
                     .show();
             return;
         }
@@ -126,7 +123,7 @@ public class UpdateChecker {
     }
 
     private static void downloadAndInstall(Activity activity, String apkUrl) {
-        toast(activity, "Downloading update…");
+        toast(activity, activity.getString(R.string.update_downloading));
         new Thread(() -> {
             try {
                 File apk = new File(activity.getCacheDir(), "TagTracker-update.apk");
@@ -138,7 +135,7 @@ public class UpdateChecker {
                 i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
                 activity.startActivity(i);
             } catch (Exception e) {
-                toast(activity, "Download failed: " + msg(e));
+                toast(activity, activity.getString(R.string.update_download_failed, msg(e)));
             }
         }).start();
     }

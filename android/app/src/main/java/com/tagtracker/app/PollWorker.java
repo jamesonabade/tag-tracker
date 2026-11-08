@@ -54,10 +54,12 @@ public class PollWorker extends Worker {
                 .format(new java.util.Date());
         boolean guarding = TagApp.prefs(ctx).getBoolean(TagApp.KEY_GUARD, false);
         boolean ongoing = TagApp.prefs(ctx).getBoolean(TagApp.KEY_BG_NOTIFY, true);
-        String prefix = guarding ? "🔒 Guarding" : "Active";
-        Notify.syncStatus(ctx, added > 0
-                ? prefix + " · " + added + " new location(s)" + (drive ? " · synced" : "") + " · " + when
-                : prefix + " · last check " + when, ongoing);
+        String prefix = guarding ? ctx.getString(R.string.status_guarding) : ctx.getString(R.string.status_active);
+        String syncSuffix = drive ? ctx.getString(R.string.status_synced) : "";
+        String statusText = (added > 0)
+                ? ctx.getString(R.string.status_new_locations, prefix, added, syncSuffix, when)
+                : ctx.getString(R.string.status_last_check, prefix, when);
+        Notify.syncStatus(ctx, statusText, ongoing);
         return Result.success();
     }
 

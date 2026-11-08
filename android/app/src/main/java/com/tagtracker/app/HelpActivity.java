@@ -23,7 +23,7 @@ public class HelpActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("How it works");
+        setTitle(getString(R.string.help_title_activity));
         onboard = getIntent().getBooleanExtra(EXTRA_ONBOARD, false);
 
         WebViewAssetLoader loader = new WebViewAssetLoader.Builder()

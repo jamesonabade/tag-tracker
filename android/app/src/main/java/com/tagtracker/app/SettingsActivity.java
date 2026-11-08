@@ -41,7 +41,7 @@ public class SettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setTitle("Tag Tracker setup");
+        setTitle(getString(R.string.settings_title));
 
         ScrollView scroll = new ScrollView(this);
         root = new LinearLayout(this);
@@ -63,7 +63,7 @@ public class SettingsActivity extends Activity {
     private void render() {
         root.removeAllViews();
         TextView loading = new TextView(this);
-        loading.setText("Loading…");
+        loading.setText(getString(R.string.settings_loading));
         loading.setPadding(0, dp(20), 0, 0);
         root.addView(loading);
         // Read the Google auth state OFF the UI thread — Python start can take seconds (avoids ANR).
@@ -91,15 +91,15 @@ public class SettingsActivity extends Activity {
 
         // Welcome / onboarding intro
         TextView welcome = new TextView(this);
-        welcome.setText("Set up Tag Tracker");
+        welcome.setText(getString(R.string.settings_welcome));
         welcome.setTextSize(22);
         welcome.setTypeface(welcome.getTypeface(), android.graphics.Typeface.BOLD);
         welcome.setPadding(0, dp(6), 0, dp(2));
         root.addView(welcome);
-        note("Find Hub shows only your tag's last spot. This app saves the full history and alerts you if it "
-                + "moves. New here? Read the quick guide first – it explains everything.");
+        note(getString(R.string.settings_intro));
+
         Button guide = new Button(this);
-        guide.setText("📖  How it works (guide)");
+        guide.setText(getString(R.string.settings_guide_btn));
         guide.setAllCaps(false);
         guide.setOnClickListener(v -> startActivity(new Intent(this, HelpActivity.class)));
         LinearLayout.LayoutParams glp = new LinearLayout.LayoutParams(
@@ -108,18 +108,13 @@ public class SettingsActivity extends Activity {
         root.addView(guide, glp);
         progress(signedIn, unlocked);
 
-        heading("1. Connect your Google account");
-        note("Google needs TWO things, both on Google's own pages (the app never sees your password "
-                + "or PIN): your account sign-in, and a one-time screen-lock check that releases the "
-                + "keys to DECRYPT your tag locations. Google requires that second check for end-to-end "
-                + "encryption – no app can skip it. Tap the one button below and just follow the prompts; "
-                + "it walks you through both and you won't need to repeat it. Updating the app later does "
-                + "NOT log you out.");
+        heading(getString(R.string.settings_head_1));
+        note(getString(R.string.settings_note_1));
 
         // One guided flow: sign-in, then automatically straight into the unlock step.
         if (!(signedIn && unlocked)) {
             Button connect = new Button(this);
-            connect.setText("🔗  Connect Google account (guided)");
+            connect.setText(getString(R.string.settings_connect_guided));
             connect.setAllCaps(false);
             connect.setOnClickListener(v -> {
                 autoUnlockAfterSignIn = true;
@@ -130,32 +125,28 @@ public class SettingsActivity extends Activity {
                     LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
             clp.topMargin = dp(6);
             root.addView(connect, clp);
-            note("Prefer to do the two steps yourself? The individual buttons are below.");
+            note(getString(R.string.settings_note_individual));
         }
 
         // Step 1
-        info((signedIn ? "✓ " : "① ") + "Step 1: Sign in"
-                + (signedIn && !email.isEmpty() ? " – " + email : ""));
-        button(signedIn ? "Sign in again" : "Sign in to Google",
+        info(getString(R.string.settings_step_1_title, (signedIn ? "✓ " : "① "), (signedIn && !email.isEmpty() ? " – " + email : "")));
+        button(getString(signedIn ? R.string.settings_signin_again : R.string.settings_signin_google),
                 v -> startAuth(GoogleAuthActivity.MODE_SIGN_IN, REQ_SIGN_IN));
 
         // Step 2
-        info((unlocked ? "✓ " : "② ") + "Step 2: Unlock encryption (needed to see locations)");
-        button(unlocked ? "Unlock again" : "Unlock encryption keys",
+        info(getString(R.string.settings_step_2_title, (unlocked ? "✓ " : "② ")));
+        button(getString(unlocked ? R.string.settings_unlock_again : R.string.settings_unlock_keys),
                 v -> startAuth(GoogleAuthActivity.MODE_UNLOCK, REQ_UNLOCK));
         if (signedIn && !unlocked) {
-            note("⚠ You're signed in and your tags are listed, but the map will stay empty until you finish "
-                    + "step 2. Tap “Unlock encryption keys” and enter your phone's screen lock.");
+            note(getString(R.string.settings_warn_unlocked));
         }
-        if (signedIn && unlocked) info("✓ All set – the app can read and decrypt your tags.");
+        if (signedIn && unlocked) info(getString(R.string.settings_all_set));
         if (error != null) info("Note: " + error);
 
         // Option B alternative: import a login file made on a PC (most reliable).
-        note("— or —");
-        note("Option B: If the steps above fail, run the desktop setup once on a PC "
-                + "(python -m server.manage google-login), copy the resulting data/google_secrets.json to this "
-                + "phone, and import it here. No re-login needed on the phone.");
-        button("Import login file (google_secrets.json)", v -> {
+        note(getString(R.string.settings_or));
+        note(getString(R.string.settings_option_b));
+        button(getString(R.string.settings_import_btn), v -> {
             Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
             i.addCategory(Intent.CATEGORY_OPENABLE);
             i.setType("*/*");
@@ -163,21 +154,17 @@ public class SettingsActivity extends Activity {
             try {
                 startActivityForResult(i, REQ_IMPORT);
             } catch (Exception e) {
-                toast("No file picker available");
+                toast(getString(R.string.toast_no_picker));
             }
         });
 
-        heading("2. Background checking");
-        note("The app checks Find Hub in the background with Android WorkManager (Google's battery-efficient "
-                + "scheduler) and saves every location. It uses almost no battery while idle: it only wakes for a "
-                + "few seconds per check, needs a network connection, and closes the connection in between. It uses "
-                + "NO device-location permission (locations come from Google's network, not your phone's GPS). "
-                + "Android's minimum interval is 15 minutes; pick a longer one to use even less battery.");
+        heading(getString(R.string.settings_head_2));
+        note(getString(R.string.settings_note_2));
         int interval = TagApp.intervalMinutes(this);
-        info("Currently every " + interval + " minutes.");
+        info(getString(R.string.settings_currently_every, interval));
         LinearLayout rowI = row();
         for (int m : INTERVALS) {
-            Button b = chip(m + " min", v -> {
+            Button b = chip(getString(R.string.settings_min_suffix, m), v -> {
                 TagApp.prefs(this).edit().putInt(TagApp.KEY_INTERVAL, m).apply();
                 PollWorker.schedule(this);
                 render();
@@ -186,165 +173,142 @@ public class SettingsActivity extends Activity {
             rowI.addView(b);
         }
         root.addView(rowI);
-        note("Longer interval = less battery. 240 min is the battery-saver option. See exactly what the app "
-                + "does and its tiny active time in Battery & activity:");
-        button("Battery & activity →", v -> startActivity(new Intent(this, BatteryActivity.class)));
+        note(getString(R.string.settings_note_interval));
+        button(getString(R.string.settings_battery_activity_btn), v -> startActivity(new Intent(this, BatteryActivity.class)));
         if (!isIgnoringBattery()) {
-            note("Optional: only if your phone (Xiaomi/Samsung/etc.) aggressively kills background apps, allow "
-                    + "unrestricted running so checks aren't skipped. Not required on most phones.");
-            button("Allow unrestricted background (optional)", v -> requestIgnoreBattery());
+            note(getString(R.string.settings_battery_ignore_note));
+            button(getString(R.string.settings_battery_ignore_btn), v -> requestIgnoreBattery());
         } else {
-            info("✓ Unrestricted background running is allowed.");
+            info(getString(R.string.settings_battery_ignore_ok));
         }
         boolean bgNotify = TagApp.prefs(this).getBoolean(TagApp.KEY_BG_NOTIFY, true);
-        info(bgNotify ? "✓ A status notification shows while the app runs in the background."
-                : "Background status notification is off.");
-        button(bgNotify ? "Hide background notification" : "Show background notification", v -> {
+        info(getString(bgNotify ? R.string.settings_bg_notify_on : R.string.settings_bg_notify_off));
+        button(getString(bgNotify ? R.string.settings_bg_notify_hide : R.string.settings_bg_notify_show), v -> {
             TagApp.prefs(this).edit().putBoolean(TagApp.KEY_BG_NOTIFY, !bgNotify).apply();
             render();
         });
 
-        note("Closing the app (swiping it away) does NOT stop tracking – it keeps checking and saving in "
-                + "the background, which is what you want. Use the button below only when you want to FULLY stop it.");
+        note(getString(R.string.settings_swipe_note));
         boolean paused = TagApp.prefs(this).getBoolean(TagApp.KEY_PAUSED, false);
         if (paused) {
-            info("⏸ Background tracking is STOPPED. No locations are being saved.");
-            button("Resume background tracking", v -> {
+            info(getString(R.string.settings_tracking_stopped));
+            button(getString(R.string.settings_resume_tracking), v -> {
                 TagApp.prefs(this).edit().putBoolean(TagApp.KEY_PAUSED, false).apply();
                 PollWorker.schedule(this);
-                toast("Tracking resumed");
+                toast(getString(R.string.toast_tracking_resumed));
                 render();
             });
         } else {
-            button("⏹ Stop tracking (full exit)", v -> {
+            button(getString(R.string.settings_stop_tracking), v -> {
                 TagApp.prefs(this).edit().putBoolean(TagApp.KEY_PAUSED, true).apply();
                 PollWorker.stop(this);
-                toast("Background tracking stopped. Tap Resume to start again.");
+                toast(getString(R.string.toast_tracking_stopped));
                 render();
             });
         }
 
-        heading("3. Storage & sync");
-        note("Your locations are ALWAYS saved on the phone first – they can never be lost, even with no "
-                + "internet or if Drive is busy. Google Drive is an extra cloud copy on top. Choose:\n"
-                + "• CONTINUOUS SYNC (recommended): phone + Google Drive, syncs after each check. If offline or "
-                + "rate-limited, it just retries later – nothing is lost.\n"
-                + "• LOCAL ONLY: keep everything on the phone, no cloud (turn both options below off).");
+        heading(getString(R.string.settings_head_3));
+        note(getString(R.string.settings_note_3));
 
-        // Default (automatic) mode: one fixed folder in the SAME Google account, no file picking.
-        // Signing into the app on another phone with the same account pulls the history back.
         boolean autoDrive = TagApp.prefs(this).getBoolean(TagApp.KEY_DRIVE_AUTO, false);
-        info(autoDrive ? "✓ DEFAULT automatic sync is ON (folder ‘TagTracker’ in your Google account)."
-                : "DEFAULT: automatic sync to a ‘TagTracker’ folder in your own Google account – no "
-                  + "file picking, and it comes back automatically when you sign in on another phone.");
-        button(autoDrive ? "Sync default folder now" : "Use automatic default sync (recommended)", v -> {
+        info(getString(autoDrive ? R.string.settings_drive_auto_on : R.string.settings_drive_auto_off));
+        button(getString(autoDrive ? R.string.settings_sync_default_now : R.string.settings_use_default_sync), v -> {
             TagApp.prefs(this).edit().putBoolean(TagApp.KEY_DRIVE_AUTO, true).apply();
             new Thread(() -> {
                 try {
                     TagApp.py(this).callAttr("set_drive_default", true);
                     int got = TagApp.py(this).callAttr("drive_default_restore").toInt();
                     TagApp.py(this).callAttr("drive_default_upload");
-                    toast(got > 0 ? "Default sync on – pulled " + got + " saved location(s) from Drive"
-                            : "Default sync on – Drive folder ready");
+                    toast(got > 0 ? getString(R.string.settings_sync_pulled, got)
+                            : getString(R.string.settings_sync_ready));
                 } catch (Exception e) {
-                    toast("Automatic sync needs the Google sign-in first: " + e.getMessage());
+                    toast(getString(R.string.settings_sync_need_google, e.getMessage()));
                 }
                 runOnUiThread(this::render);
             }).start();
         });
         if (autoDrive) {
             showDriveSummary();
-            button("See what's in my Drive", v -> verifyDrive());
-            button("Turn off automatic sync", v -> {
+            button(getString(R.string.settings_see_drive), v -> verifyDrive());
+            button(getString(R.string.settings_turn_off_drive_auto), v -> {
                 TagApp.prefs(this).edit().putBoolean(TagApp.KEY_DRIVE_AUTO, false).apply();
                 new Thread(() -> { try { TagApp.py(this).callAttr("set_drive_default", false); } catch (Exception ignored) {} }).start();
                 render();
             });
         }
 
-        note("— or use a CUSTOM file (any account / location) —\n"
-                + "In the picker, tap ☰ and choose GOOGLE DRIVE (not phone storage), pick a folder, and name it "
-                + "e.g. TagTracker-history.csv.");
+        note(getString(R.string.settings_or_custom));
         if (DriveBackup.enabled(this)) {
             long last = TagApp.prefs(this).getLong(TagApp.KEY_LAST_BACKUP, 0);
-            info("✓ Auto-syncing to your Drive file." + (last > 0
-                    ? "  Last sync: " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                        .format(new Date(last)) : "  (no sync yet)"));
-            button("Sync to Drive now", v -> new Thread(() -> {
+            String lastSyncStr = last > 0
+                    ? getString(R.string.settings_last_sync_prefix, DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(last)))
+                    : getString(R.string.settings_no_sync_yet);
+            info(getString(R.string.settings_drive_custom_on, lastSyncStr));
+            button(getString(R.string.settings_sync_drive_now), v -> new Thread(() -> {
                 String err = DriveBackup.backupNow(this);
-                toast(err == null ? "Synced to Drive" : "Sync failed: " + err);
+                toast(err == null ? getString(R.string.settings_synced_drive) : getString(R.string.settings_sync_failed, err));
                 runOnUiThread(this::render);
             }).start());
-            button("Restore history from a Drive file", v -> pickRestoreFile());
-            button("Choose a different file", v -> pickDriveFile());
-            button("Turn off Drive sync", v -> {
+            button(getString(R.string.settings_restore_drive_file), v -> pickRestoreFile());
+            button(getString(R.string.settings_choose_diff_file), v -> pickDriveFile());
+            button(getString(R.string.settings_turn_off_custom_drive), v -> {
                 TagApp.prefs(this).edit().remove(TagApp.KEY_DRIVE_URI).apply();
                 render();
             });
         } else {
-            button("Choose Google Drive file", v -> pickDriveFile());
-            button("Restore history from a Drive file", v -> pickRestoreFile());
+            button(getString(R.string.settings_choose_drive_file), v -> pickDriveFile());
+            button(getString(R.string.settings_restore_drive_file), v -> pickRestoreFile());
         }
 
-        heading("4. Your tags");
-        button("Refresh tag list from Google", v -> new Thread(() -> {
+        heading(getString(R.string.settings_head_4));
+        button(getString(R.string.settings_refresh_tags), v -> new Thread(() -> {
             try {
                 JSONArray tags = new JSONArray(TagApp.py(this).callAttr("list_tags_json").toString());
-                toast(tags.length() + " tag(s) found");
+                toast(getString(R.string.settings_tags_found, tags.length()));
             } catch (Exception e) {
-                toast("Could not list tags: " + e.getMessage());
+                toast(getString(R.string.settings_tags_list_error, e.getMessage()));
             }
         }).start());
-        button("Check for locations now", v -> {
+        button(getString(R.string.settings_check_loc_now), v -> {
             PollWorker.runNow(this);
-            toast("Checking Find Hub…");
+            toast(getString(R.string.toast_checking_find_hub));
         });
 
-        heading("5. Theft / guard alerts");
-        note("Turn this ON when the bike is parked. If a tag MOVES more than ~150 m, you get a LOUD "
-                + "notification with a Maps link – so you can act fast if it's stolen. Uses the same "
-                + "background checks, so no extra battery. Tip: if it's stolen, share the live location and history "
-                + "with the police – don't confront the thief yourself.");
+        heading(getString(R.string.settings_head_5));
+        note(getString(R.string.settings_note_5));
         boolean guard = TagApp.prefs(this).getBoolean(TagApp.KEY_GUARD, false);
-        info(guard ? "✓ Guard mode is ON – you'll be alerted if a tag moves."
-                : "Guard mode is off.");
-        button(guard ? "Turn OFF guard mode" : "Turn ON guard mode", v -> {
+        info(getString(guard ? R.string.settings_guard_on : R.string.settings_guard_off));
+        button(getString(guard ? R.string.settings_guard_turn_off : R.string.settings_guard_turn_on), v -> {
             TagApp.prefs(this).edit().putBoolean(TagApp.KEY_GUARD, !guard).apply();
             render();
         });
 
-        heading("6. App lock (this phone only)");
-        note("Protect the app with a password so no one who picks up your phone can open your tracker. "
-                + "The password and hint are stored ONLY on this phone – never sent to Google or Drive, so they "
-                + "can't be recovered from anywhere else. If you forget it and the hint doesn't help, reinstall the app.");
+        heading(getString(R.string.settings_head_6));
+        note(getString(R.string.settings_note_6));
         if (TagApp.hasAppLock(this)) {
-            info("✓ App lock is ON.");
-            button("Change app password", v -> showAppLockDialog());
-            button("Turn off app lock", v -> { TagApp.setAppLock(this, null, null); render(); });
+            info(getString(R.string.settings_applock_on));
+            button(getString(R.string.settings_change_app_pw), v -> showAppLockDialog());
+            button(getString(R.string.settings_turn_off_applock), v -> { TagApp.setAppLock(this, null, null); render(); });
         } else {
-            button("Set an app password", v -> showAppLockDialog());
+            button(getString(R.string.settings_set_app_pw), v -> showAppLockDialog());
         }
 
-        heading("Legal & privacy");
-        note("Not affiliated with Google. This app uses an UNOFFICIAL method to read the Find network – "
-                + "Google may block it at any time, and it may violate Google's Terms of Service. For tracking "
-                + "YOUR OWN property only, never a person without consent. Your data stays on your phone and your "
-                + "own Google Drive; nothing is sent to the developer. Provided AS IS, no warranty. Open-source "
-                + "(GPL-3.0), built on GoogleFindMyTools.");
-        button("Read full disclaimer & privacy", v -> showLegal());
+        heading(getString(R.string.settings_head_legal));
+        note(getString(R.string.settings_note_legal));
+        button(getString(R.string.settings_read_legal_btn), v -> showLegal());
 
         status = new TextView(this);
         status.setPadding(0, dp(16), 0, 0);
         root.addView(status);
-        button("Open map", v -> { startActivity(new Intent(this, MainActivity.class)); finish(); });
-        button("Help", v -> startActivity(new Intent(this, HelpActivity.class)));
+        button(getString(R.string.settings_open_map), v -> { startActivity(new Intent(this, MainActivity.class)); finish(); });
+        button(getString(R.string.settings_help_btn), v -> startActivity(new Intent(this, HelpActivity.class)));
     }
 
     /** A no-network summary line: folder, last sync, how many locations are stored. The view is
      *  added in place now and its text filled in once the (fast, local) status is read off-thread. */
     private void showDriveSummary() {
         final TextView t = new TextView(this);
-        t.setText("📁 reading Drive status…");
+        t.setText(getString(R.string.settings_drive_reading));
         t.setTextSize(14);
         t.setPadding(0, dp(4), 0, dp(4));
         root.addView(t);
@@ -354,14 +318,13 @@ public class SettingsActivity extends Activity {
                 JSONObject s = new JSONObject(TagApp.py(this).callAttr("drive_status_json").toString());
                 long last = s.optLong("last_sync", 0);
                 String when = last > 0 ? DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                        .format(new Date(last * 1000L)) : "not yet";
-                line = "📁 " + s.optString("folder") + "  ·  " + s.optInt("locations")
-                        + " location(s) saved  ·  syncs " + s.optString("scope")
-                        + "  ·  last sync: " + when;
+                        .format(new Date(last * 1000L)) : getString(R.string.settings_drive_not_yet);
+                line = getString(R.string.settings_drive_summary_line, s.optString("folder"),
+                        s.optInt("locations"), s.optString("scope"), when);
                 String err = s.isNull("error") ? null : s.optString("error", null);
-                if (err != null && !err.isEmpty()) line += "\n⚠ last error: " + err;
+                if (err != null && !err.isEmpty()) line += getString(R.string.settings_drive_last_error, err);
             } catch (Exception e) {
-                line = "Drive status unavailable: " + e.getMessage();
+                line = getString(R.string.settings_drive_status_unavailable, e.getMessage());
             }
             final String fLine = line;
             runOnUiThread(() -> t.setText(fLine));
@@ -370,21 +333,20 @@ public class SettingsActivity extends Activity {
 
     /** On-demand proof: ask Google Drive what's actually in TagTracker/history and show the list. */
     private void verifyDrive() {
-        toast("Checking Google Drive…");
+        toast(getString(R.string.settings_checking_drive));
         new Thread(() -> {
             try {
                 JSONObject r = new JSONObject(TagApp.py(this).callAttr("drive_verify_json").toString());
                 if (!r.optBoolean("ok")) {
-                    toast("Couldn't read Drive: " + r.optString("error"));
+                    toast(getString(R.string.settings_drive_cant_read, r.optString("error")));
                     return;
                 }
                 StringBuilder sb = new StringBuilder();
-                sb.append("Folder: ").append(r.optString("folder")).append("\n");
-                sb.append(r.optInt("count")).append(" file(s), ")
-                        .append(r.optLong("bytes") / 1024).append(" KB total\n\n");
+                sb.append(getString(R.string.settings_drive_folder_label, r.optString("folder")));
+                sb.append(getString(R.string.settings_drive_files_total, r.optInt("count"), r.optLong("bytes") / 1024));
                 JSONArray files = r.optJSONArray("files");
                 if (files == null || files.length() == 0) {
-                    sb.append("(empty — nothing synced yet. Tap ‘Sync default folder now’.)");
+                    sb.append(getString(R.string.settings_drive_empty));
                 } else {
                     for (int i = 0; i < files.length(); i++) {
                         JSONObject f = files.optJSONObject(i);
@@ -393,11 +355,11 @@ public class SettingsActivity extends Activity {
                     }
                 }
                 runOnUiThread(() -> new AlertDialog.Builder(this)
-                        .setTitle("Your data in Google Drive")
+                        .setTitle(getString(R.string.dialog_drive_title))
                         .setMessage(sb.toString().trim())
-                        .setPositiveButton("Close", null).show());
+                        .setPositiveButton(getString(R.string.dialog_close), null).show());
             } catch (Exception e) {
-                toast("Verify failed: " + e.getMessage());
+                toast(getString(R.string.settings_drive_verify_failed, e.getMessage()));
             }
         }).start();
     }
@@ -410,16 +372,16 @@ public class SettingsActivity extends Activity {
         try {
             startActivityForResult(i, REQ_RESTORE);
         } catch (Exception e) {
-            toast("No file picker available");
+            toast(getString(R.string.toast_no_picker));
         }
     }
 
     private void progress(boolean signedIn, boolean unlocked) {
         LinearLayout r = row();
         r.setPadding(0, dp(2), 0, dp(10));
-        addStep(r, "Sign in", signedIn);
-        addStep(r, "Unlock", unlocked);
-        addStep(r, "Background", true);
+        addStep(r, getString(R.string.settings_step_signin), signedIn);
+        addStep(r, getString(R.string.settings_step_unlock), unlocked);
+        addStep(r, getString(R.string.settings_step_bg), true);
         root.addView(r);
     }
 
@@ -440,36 +402,15 @@ public class SettingsActivity extends Activity {
     }
 
     private void showLegal() {
-        String t = "NOT AFFILIATED WITH GOOGLE\n"
-                + "Tag Tracker is an independent, open-source app. It is not created, endorsed or supported by "
-                + "Google. “Google”, “Find Hub” and “Android” are trademarks of Google LLC.\n\n"
-                + "UNOFFICIAL METHOD / YOUR RISK\n"
-                + "It reads the Find network using the open-source GoogleFindMyTools, an unofficial method. Google "
-                + "provides no public API and may change or block this at any time. Using an unofficial client may "
-                + "violate Google's Terms of Service. You use this app at your own risk, including risk to your "
-                + "Google account.\n\n"
-                + "ACCEPTABLE USE\n"
-                + "Track only trackers you own or are authorised to track. Do NOT use it to locate or monitor any "
-                + "person without their knowledge and consent – that is illegal in many places. If something is "
-                + "stolen, give the location to the police; do not confront anyone.\n\n"
-                + "PRIVACY\n"
-                + "Your history stays on your phone and, if enabled, in your own Google Drive. The app has no servers "
-                + "of its own and sends no data to the developer or any third party. Your Google tokens stay on your "
-                + "device.\n\n"
-                + "NO WARRANTY\n"
-                + "Provided “AS IS”, without warranty of any kind. The authors are not liable for any damages, "
-                + "data loss, account issues, or missed/incorrect locations.\n\n"
-                + "LICENSE\n"
-                + "GNU GPL v3.0. Built on GoogleFindMyTools by Leon Böttger (GPL-3.0).";
         TextView tv = new TextView(this);
-        tv.setText(t);
+        tv.setText(getString(R.string.settings_note_legal));
         tv.setTextSize(13);
         int pad = dp(20);
         tv.setPadding(pad, pad, pad, pad);
         ScrollView sc = new ScrollView(this);
         sc.addView(tv);
-        new AlertDialog.Builder(this).setTitle("Legal, disclaimer & privacy")
-                .setView(sc).setPositiveButton("Close", null).show();
+        new AlertDialog.Builder(this).setTitle(getString(R.string.dialog_legal_title))
+                .setView(sc).setPositiveButton(getString(R.string.dialog_close), null).show();
     }
 
     private void showAppLockDialog() {
@@ -478,24 +419,24 @@ public class SettingsActivity extends Activity {
         int pad = dp(20);
         box.setPadding(pad, pad, pad, 0);
         EditText pw = new EditText(this);
-        pw.setHint("New app password (min 4)");
+        pw.setHint(getString(R.string.hint_new_pw));
         pw.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
         EditText hint = new EditText(this);
-        hint.setHint("Recovery hint (e.g. ‘usual PIN’)");
+        hint.setHint(getString(R.string.hint_recovery));
         box.addView(pw);
         box.addView(hint);
         new AlertDialog.Builder(this)
-                .setTitle("Set app password")
+                .setTitle(getString(R.string.title_set_app_pw))
                 .setView(box)
-                .setPositiveButton("Save", (d, w) -> {
+                .setPositiveButton(getString(R.string.dialog_save), (d, w) -> {
                     String p = pw.getText().toString();
-                    if (p.length() < 4) { toast("Password too short"); return; }
+                    if (p.length() < 4) { toast(getString(R.string.toast_pw_short)); return; }
                     TagApp.setAppLock(this, p, hint.getText().toString());
                     TagApp.appUnlocked = true;
-                    toast("App lock set");
+                    toast(getString(R.string.toast_applock_set));
                     render();
                 })
-                .setNegativeButton("Cancel", null)
+                .setNegativeButton(getString(R.string.dialog_cancel), null)
                 .show();
     }
 
@@ -506,7 +447,6 @@ public class SettingsActivity extends Activity {
     }
 
     private void pickDriveFile() {
-        // ACTION_CREATE_DOCUMENT lets the user create a new file (or pick an existing one to overwrite) in Drive.
         Intent i = new Intent(Intent.ACTION_CREATE_DOCUMENT);
         i.addCategory(Intent.CATEGORY_OPENABLE);
         i.setType("text/csv");
@@ -514,17 +454,16 @@ public class SettingsActivity extends Activity {
         try {
             startActivityForResult(i, REQ_DRIVE_FILE);
         } catch (Exception e) {
-            toast("No file picker available");
+            toast(getString(R.string.toast_no_picker));
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // Guided flow: once sign-in succeeds, go straight into the unlock step.
         if (requestCode == REQ_SIGN_IN && resultCode == RESULT_OK && autoUnlockAfterSignIn) {
             autoUnlockAfterSignIn = false;
-            toast("Signed in – now confirm your screen lock to unlock locations");
+            toast(getString(R.string.toast_signed_in_unlock));
             startAuth(GoogleAuthActivity.MODE_UNLOCK, REQ_UNLOCK);
             return;
         }
@@ -539,7 +478,7 @@ public class SettingsActivity extends Activity {
                     .putLong(TagApp.KEY_LAST_BACKUP, 0).apply();
             new Thread(() -> {
                 String err = DriveBackup.backupNow(this);
-                toast(err == null ? "Drive sync set up" : "Sync failed: " + err);
+                toast(err == null ? getString(R.string.toast_drive_sync_setup) : "Sync failed: " + err);
                 runOnUiThread(this::render);
             }).start();
         } else if (requestCode == REQ_IMPORT && data != null && data.getData() != null) {
@@ -558,11 +497,11 @@ public class SettingsActivity extends Activity {
                     tmp.delete();
                     JSONObject st = new JSONObject(stateJson);
                     toast(st.optBoolean("unlocked")
-                            ? "Login imported – signed in and unlocked. Tap Check now."
-                            : "Login imported, but it has no encryption key (unlock part). Locations may not decrypt.");
+                            ? getString(R.string.settings_import_login_ok)
+                            : getString(R.string.settings_import_login_no_keys));
                     runOnUiThread(this::render);
                 } catch (Exception e) {
-                    toast("Import failed: " + e.getMessage());
+                    toast(getString(R.string.settings_import_failed, e.getMessage()));
                 }
             }).start();
         } else if (requestCode == REQ_RESTORE && data != null && data.getData() != null) {
@@ -579,16 +518,14 @@ public class SettingsActivity extends Activity {
                     int added = TagApp.py(this).callAttr("import_csv", tmp.getAbsolutePath()).toInt();
                     //noinspection ResultOfMethodCallIgnored
                     tmp.delete();
-                    toast("Restored " + added + " location(s) from the file");
+                    toast(getString(R.string.settings_restore_success, added));
                 } catch (Exception e) {
-                    toast("Restore failed: " + e.getMessage());
+                    toast(getString(R.string.settings_restore_failed, e.getMessage()));
                 }
             }).start();
         }
         render();
     }
-
-    // ---------- battery optimisation ----------
 
     private boolean isIgnoringBattery() {
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
@@ -605,8 +542,6 @@ public class SettingsActivity extends Activity {
             startActivity(new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS));
         }
     }
-
-    // ---------- tiny view helpers ----------
 
     private int dp(int v) {
         return (int) (v * getResources().getDisplayMetrics().density);

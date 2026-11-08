@@ -20,15 +20,15 @@ final class Notify {
         NotificationManager nm = (NotificationManager) ctx.getSystemService(Context.NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && nm != null) {
             if (nm.getNotificationChannel(CHANNEL) == null) {
-                NotificationChannel ch = new NotificationChannel(CHANNEL, "Sync status",
+                NotificationChannel ch = new NotificationChannel(CHANNEL, ctx.getString(R.string.notification_channel_sync),
                         NotificationManager.IMPORTANCE_LOW); // low = no sound, minimal battery
-                ch.setDescription("Shows when the app checks Find Hub and syncs to Google Drive");
+                ch.setDescription(ctx.getString(R.string.notification_channel_sync_desc));
                 nm.createNotificationChannel(ch);
             }
             if (nm.getNotificationChannel(CHANNEL_ALERT) == null) {
-                NotificationChannel ch = new NotificationChannel(CHANNEL_ALERT, "Theft / movement alerts",
+                NotificationChannel ch = new NotificationChannel(CHANNEL_ALERT, ctx.getString(R.string.notification_channel_theft),
                         NotificationManager.IMPORTANCE_HIGH); // loud: this is the important one
-                ch.setDescription("Alerts you when a guarded tag moves");
+                ch.setDescription(ctx.getString(R.string.notification_channel_theft_desc));
                 nm.createNotificationChannel(ch);
             }
         }
@@ -51,12 +51,12 @@ final class Notify {
         Notification.Builder b = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 ? new Notification.Builder(ctx, CHANNEL_ALERT)
                 : new Notification.Builder(ctx).setPriority(Notification.PRIORITY_HIGH);
-        Notification n = b.setContentTitle("⚠ " + name + " is moving!")
-                .setContentText("Moved " + movedM + " m. Tap to see the map.")
+        Notification n = b.setContentTitle(ctx.getString(R.string.theft_alert_title, name))
+                .setContentText(ctx.getString(R.string.theft_alert_text, movedM))
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentIntent(open)
-                .addAction(new Notification.Action.Builder(R.drawable.ic_launcher, "Ring tag", ringPi).build())
-                .addAction(new Notification.Action.Builder(R.drawable.ic_launcher, "Open in Maps", mapsPi).build())
+                .addAction(new Notification.Action.Builder(R.drawable.ic_launcher, ctx.getString(R.string.action_ring_tag), ringPi).build())
+                .addAction(new Notification.Action.Builder(R.drawable.ic_launcher, ctx.getString(R.string.action_open_maps), mapsPi).build())
                 .setAutoCancel(true)
                 .build();
         try {
@@ -73,7 +73,7 @@ final class Notify {
         Notification.Builder b = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                 ? new Notification.Builder(ctx, CHANNEL)
                 : new Notification.Builder(ctx);
-        Notification n = b.setContentTitle("Tag Tracker is running")
+        Notification n = b.setContentTitle(ctx.getString(R.string.notification_running_title))
                 .setContentText(text)
                 .setSmallIcon(R.drawable.ic_launcher)
                 .setContentIntent(tap)

@@ -1,43 +1,32 @@
-# Tag Tracker — Legal, Disclaimer & Privacy
+# Tag Tracker — Termos Legais, Isenção de Responsabilidade e Privacidade
 
-> **Not affiliated with Google.** Tag Tracker is an independent, open-source project. It is **not**
-> created, endorsed, sponsored, or supported by Google LLC. "Google", "Find Hub", "Find My Device",
-> and "Android" are trademarks of Google LLC, used here only to describe compatibility, nominatively.
+> **Sem vínculo com o Google.** O Tag Tracker é um projeto independente e de código aberto. Ele **não** é criado, endossado, patrocinado ou suportado pela Google LLC. "Google", "Find Hub", "Find My Device", "Encontre Meu Dispositivo" e "Android" são marcas registradas da Google LLC, utilizadas aqui exclusivamente para fins descritivos de compatibilidade.
 
-## What this app is
-Tag Tracker records and shows the **location history** of Bluetooth trackers that report to Google's
-Find network — history that the official Find Hub app does not keep. It is intended for **personal use
-by the owner of the tracker**, to keep track of **their own property**.
+## O que é este aplicativo
+O Tag Tracker registra e exibe o **histórico de localização** de rastreadores Bluetooth conectados à rede Find do Google — histórico que o aplicativo oficial Encontre Meu Dispositivo não armazena. O aplicativo destina-se ao **uso pessoal pelo proprietário do rastreador**, para monitoramento e gestão de **seus próprios bens e patrimônio**.
 
-## Disclaimer (please read)
-- Tag Tracker uses an **unofficial method** to read the Find network (the open-source
-  [GoogleFindMyTools](https://github.com/leonboe1/GoogleFindMyTools)). Google provides no public API,
-  and **Google may change or block this at any time**, which could stop the app working.
-- Using an unofficial client **may violate Google's Terms of Service.** You use this app **at your own
-  risk**, including any risk to your Google account. If you are not comfortable with that, do not use it.
-- The software is provided **"AS IS", without warranty of any kind.** The authors are not liable for any
-  damages, data loss, account issues, or missed/incorrect locations.
+## Isenção de Responsabilidade (Leia com atenção)
+- O Tag Tracker utiliza um **método não oficial** para ler os dados da rede Find (a biblioteca open-source [GoogleFindMyTools](https://github.com/leonboe1/GoogleFindMyTools)). O Google não disponibiliza uma API pública oficial, e **o Google pode alterar ou bloquear esse acesso a qualquer momento**, o que pode interromper o funcionamento do aplicativo.
+- O uso de clientes não oficiais **pode violar os Termos de Serviço do Google**. Você utiliza este aplicativo **por sua própria conta e risco**, incluindo qualquer risco relacionado à sua conta Google. Se você não concorda com estes termos, não utilize o software.
+- O software é fornecido **"NO ESTADO EM QUE SE ENCONTRA" (AS IS), sem garantias de qualquer tipo**. Os autores e desenvolvedores não se responsabilizam por quaisquer danos, perdas de dados, bloqueios de contas ou imprecisões de localização.
 
-## Acceptable use — you agree that you will
-- Only track trackers **you own** or are **authorised by the owner** to track.
-- **Not** use it to locate, follow, monitor, or surveil **any person** without their knowledge and consent.
-- Comply with all **laws in your country/region**, including privacy, stalking, and surveillance laws.
+## Uso Aceitável — Você concorda em:
+- Rastrear exclusivamente dispositivos que **sejam de sua propriedade** ou para os quais você possua **autorização expressa do proprietário**.
+- **NÃO** utilizar o aplicativo para localizar, seguir, monitorar ou vigiar **nenhuma pessoa** sem o conhecimento e consentimento prévio e explícito dela.
+- Cumprir integralmente todas as **leis vigentes no seu país/jurisdição**, incluindo legislações de privacidade, proteção de dados e normas contra perseguição (stalking).
 
-Tracking a person without consent is illegal in many places and is **strictly not a supported use.**
-If a tracker is lost or stolen, use the location with the **police** — do not confront anyone yourself.
+Rastrear indivíduos sem consentimento é crime em diversas jurisdições e é **estritamente proibido por este projeto.** Em caso de roubo ou furto do bem rastreado, encaminhe as coordenadas para as **autoridades policiais** competentes — nunca confronte suspeitos por conta própria.
 
-## Privacy — your data stays yours
-- Your location history is stored **on your phone** and, if you enable it, in **your own Google Drive**.
-- The app has **no servers of its own** and sends **no data to the developer or any third party.**
-- Your Google sign-in tokens stay **on your device**. Map tiles are fetched from public map providers
-  (OpenStreetMap / Google) to draw the map.
-- Uninstalling the app removes its on-phone data. Your Drive copy remains in your Drive until you delete it.
+## Privacidade — Seus dados pertencem a você
+- Seu histórico de posições é armazenado localmente **no seu próprio celular** e, se você ativar, no **seu próprio Google Drive**.
+- O aplicativo não possui servidores intermediários para coleta de dados e **não envia nenhuma informação aos desenvolvedores ou a terceiros.**
+- Os tokens de acesso à conta Google permanecem armazenados **exclusivamente no seu dispositivo**. Os mapas são carregados de provedores públicos (OpenStreetMap / Google) para exibição cartográfica.
+- A desinstalação do aplicativo apaga os dados locais do celular. O backup no seu Google Drive permanece sob seu controle até que você decida excluí-lo.
 
-## Open-source & attribution
-- Tag Tracker is licensed under the **GNU GPL v3.0** (see `LICENSE`).
-- It builds on **GoogleFindMyTools** by Leon Böttger, also GPL-3.0. Full credit and thanks to that project.
-- Because it is GPL, you are free to inspect, modify, and share the source. If you distribute it, you must
-  keep it under GPL and provide the source.
+## Código Aberto e Atribuição
+- O Tag Tracker é licenciado sob a licença **GNU GPL v3.0** (consulte o arquivo `LICENSE`).
+- O projeto baseia-se no **GoogleFindMyTools** desenvolvido por Leon Böttger, também sob licença GPL-3.0. Nossos sinceros agradecimentos a esse projeto.
+- Sob os termos da licença GPL, você tem a liberdade de inspecionar, modificar e redistribuir o código-fonte, desde que mantido sob a mesma licença GPL e com disponibilização das fontes.
 
-## Contact
-Questions or takedown requests: <add your contact email here>.
+## Contato
+Dúvidas ou solicitações legais: entre em contato através do repositório oficial do projeto.

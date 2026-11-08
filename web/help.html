@@ -1,14 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>How Tag Tracker works</title>
+<title data-i18n="help_title">Como o Tag Tracker funciona</title>
 <link rel="stylesheet" href="static/style.css">
 <style>
   body { background: var(--bg); }
   .wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
-  .hero { text-align: center; padding: 24px 16px 8px; }
+  .top-bar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
+  .hero { text-align: center; padding: 12px 16px 8px; }
   .hero .logo { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent), #22d3ee); margin: 0 auto 12px; display: grid; place-items: center; box-shadow: var(--shadow-lg); }
   .hero .logo svg { width: 30px; height: 30px; }
   .hero h1 { font-size: 24px; letter-spacing: -.02em; margin: 4px 0; }
@@ -39,61 +40,93 @@
 </head>
 <body>
 <div class="wrap">
+  <div class="top-bar">
+    <select id="langSelect" class="lang-select" title="Idioma / Language" aria-label="Idioma">
+      <option value="pt-BR">PT</option>
+      <option value="en">EN</option>
+    </select>
+  </div>
+
   <div class="hero">
     <div class="logo"><svg viewBox="0 0 108 108"><path d="M54 20c-14 0-24 10-24 24 0 17 24 44 24 44s24-27 24-44c0-14-10-24-24-24z" fill="#fff"/><circle cx="54" cy="44" r="9" fill="#2563eb"/></svg></div>
-    <h1>Tag Tracker</h1>
-    <p>Your tag's full travel history &amp; anti-theft alerts</p>
+    <h1 data-i18n="app_title">Tag Tracker</h1>
+    <p data-i18n="help_hero_sub">Histórico completo de deslocamento e alertas antifurto para suas tags</p>
   </div>
 
   <div class="card">
-    <h2><span class="ic">?</span> Why this app exists</h2>
+    <h2><span class="ic">?</span> <span data-i18n="help_why_title">Por que este app existe</span></h2>
     <div class="vs">
-      <div class="bad"><h3>Google Find Hub</h3><p class="muted2">Shows only the <b>last</b> location. No history — you can't see where your tag has been.</p></div>
-      <div class="good"><h3>Tag Tracker</h3><p class="muted2">Saves <b>every</b> location over time: full route, day→year history, replay, and theft alerts.</p></div>
+      <div class="bad">
+        <h3 data-i18n="help_why_google_title">Google Find Hub</h3>
+        <p class="muted2" data-i18n="help_why_google_desc">Mostra apenas a <b>última</b> localização. Sem histórico — não é possível ver por onde sua tag passou.</p>
+      </div>
+      <div class="good">
+        <h3 data-i18n="help_why_tt_title">Tag Tracker</h3>
+        <p class="muted2" data-i18n="help_why_tt_desc">Salva <b>todas</b> as localizações ao longo do tempo: percurso completo, histórico de 1 dia a 1 ano, replay e alertas de furto.</p>
+      </div>
     </div>
   </div>
 
   <div class="card">
-    <h2><span class="ic">↻</span> How a location reaches your phone</h2>
+    <h2><span class="ic">↻</span> <span data-i18n="help_flow_title">Como uma localização chega ao seu celular</span></h2>
     <ul class="flow">
-      <li><span class="n">1</span><div>Your tag broadcasts a tiny encrypted Bluetooth signal every 1–2 seconds.</div></li>
-      <li><span class="n">2</span><div>Any Android phone passing nearby (~10–30 m) detects it and uploads the encrypted position to Google — silently and anonymously.</div></li>
-      <li><span class="n">3</span><div>Your phone asks Google for it over the internet, and <b>only your phone</b> can decrypt it (that's the Unlock step).</div></li>
-      <li><span class="n">4</span><div>It's drawn on your map, saved to history, and synced to Google Drive.</div></li>
+      <li><span class="n">1</span><div data-i18n="help_flow_1">Sua tag emite um pequeno sinal Bluetooth criptografado a cada 1–2 segundos.</div></li>
+      <li><span class="n">2</span><div data-i18n="help_flow_2">Qualquer celular Android passando por perto (~10–30 m) detecta o sinal e envia a posição criptografada para o Google — de forma silenciosa e anônima.</div></li>
+      <li><span class="n">3</span><div data-i18n="help_flow_3">Seu celular solicita os dados ao Google pela internet, e <b>apenas o seu celular</b> consegue descriptografá-los (etapa de Desbloqueio).</div></li>
+      <li><span class="n">4</span><div data-i18n="help_flow_4">A rota é desenhada no mapa, gravada no histórico e sincronizada com o Google Drive.</div></li>
     </ul>
-    <p class="muted2">Updates come whenever a phone passes the tag — often in busy areas, rarely in empty ones. Your phone receives over the internet, so the tag can be anywhere.</p>
+    <p class="muted2" data-i18n="help_flow_note">As atualizações chegam sempre que um celular passa perto da tag — frequente em áreas movimentadas, raro em locais ermos. Seu celular recebe pela internet, logo a tag pode estar em qualquer lugar.</p>
   </div>
 
   <div class="card">
-    <h2><span class="ic">⚑</span> First-time setup</h2>
+    <h2><span class="ic">⚑</span> <span data-i18n="help_setup_title">Configuração inicial</span></h2>
     <ol class="steps">
-      <li><b>Sign in to Google</b><span class="muted2">Use the account your tag is on. This lists your tags.</span></li>
-      <li><b>Unlock encryption</b> <span class="pill">required</span><span class="muted2">Enter your phone's screen lock on Google's page — this lets your phone decrypt locations. Without it the map stays empty.</span></li>
-      <li><b>Turn on background checking</b><span class="muted2">The app checks every 15 min and saves each location, using almost no battery.</span></li>
-      <li><b>Sync to Google Drive</b> <span class="pill">recommended</span><span class="muted2">Default mode auto-saves to your Drive, so a new phone gets your history back automatically.</span></li>
-      <li><b>Park &amp; guard</b><span class="muted2">Tap Park when you leave the bike — you'll get a loud alert if it moves.</span></li>
+      <li>
+        <b data-i18n="help_step_1_title">Conecte sua conta Google</b>
+        <span class="muted2" data-i18n="help_step_1_desc">Use a mesma conta onde a tag está cadastrada. Isso lista seus rastreadores.</span>
+      </li>
+      <li>
+        <b><span data-i18n="help_step_2_title">Desbloqueie a criptografia</span> <span class="pill" data-i18n="help_required">obrigatório</span></b>
+        <span class="muted2" data-i18n="help_step_2_desc">Digite o bloqueio de tela do celular na página do Google — isso permite ao app descriptografar as posições. Sem isso, o mapa fica vazio.</span>
+      </li>
+      <li>
+        <b data-i18n="help_step_3_title">Ative a verificação em segundo plano</b>
+        <span class="muted2" data-i18n="help_step_3_desc">O app verifica a cada 15 min e salva cada localização, quase sem gastar bateria.</span>
+      </li>
+      <li>
+        <b><span data-i18n="help_step_4_title">Sincronize com o Google Drive</span> <span class="pill" data-i18n="help_recommended">recomendado</span></b>
+        <span class="muted2" data-i18n="help_step_4_desc">O modo padrão salva automaticamente no seu Drive, para que você recupere o histórico em outro celular.</span>
+      </li>
+      <li>
+        <b data-i18n="help_step_5_title">Estacione e proteja</b>
+        <span class="muted2" data-i18n="help_step_5_desc">Toque em Estacionar ao deixar sua bicicleta ou veículo — você receberá um alerta sonoro caso ela se mova.</span>
+      </li>
     </ol>
   </div>
 
   <div class="card">
-    <h2><span class="ic">★</span> What you can do</h2>
-    <p class="muted2">• See the full route for Today, 2 days, 7 days, 30 days, a year, or any dates &nbsp; • Replay the trip &nbsp; • Ring the tag when you're near it &nbsp; • Export CSV/GPX for the police &nbsp; • Lock the app with a password &nbsp; • Switch between OpenStreetMap, Google Maps &amp; satellite.</p>
+    <h2><span class="ic">★</span> <span data-i18n="help_features_title">O que você pode fazer</span></h2>
+    <p class="muted2" data-i18n="help_features_desc">• Ver rotas completas para Hoje, 2 dias, 7 dias, 30 dias, 1 ano ou datas personalizadas &nbsp; • Replay do percurso &nbsp; • Tocar alarme na tag quando estiver próximo &nbsp; • Exportar CSV/GPX &nbsp; • Trocar entre OpenStreetMap, Google Maps e Satélite.</p>
   </div>
 
   <div class="card">
-    <h2><span class="ic">§</span> Before you start</h2>
-    <p class="muted2"><b>Not affiliated with Google.</b> This is an independent app that uses an <b>unofficial</b>
-    method to read the Find network. Google may block it at any time, and this may violate Google's Terms of
-    Service. It's for tracking <b>your own property</b> — never a person without their consent. Use at your own risk.</p>
+    <h2><span class="ic">§</span> <span data-i18n="help_disclaimer_title">Antes de começar</span></h2>
+    <p class="muted2" data-i18n="help_disclaimer_desc"><b>Não afiliado ao Google.</b> Este é um aplicativo independente que utiliza um método <b>não oficial</b> para ler a rede Find Hub. O Google pode alterar ou bloquear isso a qualquer momento. Use apenas para rastrear <b>seus próprios bens</b> — nunca uma pessoa sem seu consentimento. Uso por sua conta e risco.</p>
     <label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:13px;cursor:pointer">
       <input type="checkbox" id="agree" style="width:18px;height:18px;margin-top:1px;accent-color:var(--accent)">
-      <span>I will only track <b>my own property</b> (not any person without consent), and I accept the disclaimer and that I use this at my own risk.</span>
+      <span data-i18n="help_agree_check">Rastrearei apenas <b>meus próprios pertences</b> (nunca uma pessoa sem consentimento), e aceito o termo de responsabilidade e uso por minha conta e risco.</span>
     </label>
   </div>
 
-  <div class="cta"><button id="start" disabled style="opacity:.5">Agree &amp; start setup</button></div>
+  <div class="cta"><button id="start" disabled style="opacity:.5" data-i18n="help_start_btn">Concordar &amp; iniciar configuração</button></div>
 </div>
+<script src="static/i18n.js"></script>
 <script>
+  var langSel = document.getElementById('langSelect');
+  if (langSel && window.I18N) {
+    langSel.value = window.I18N.lang;
+    langSel.addEventListener('change', function() { window.I18N.setLang(langSel.value); });
+  }
   var cb = document.getElementById('agree'), b = document.getElementById('start');
   cb.addEventListener('change', function(){ b.disabled = !cb.checked; b.style.opacity = cb.checked ? '1' : '.5'; });
   b.addEventListener('click', function(){

@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 # Public key of the license signer. The matching PRIVATE key lives only in the
 # separate key-generator app (private repo) — never here.
-PUBLIC_KEY_HEX = "fbf4124b4c0cd6faeb1b2ea9960a48f69b4cf14649aea404142df8cec0cef96b"
+PUBLIC_KEY_HEX = "348b8bd95fe959d900ac948b368f1d4c79788649a5cd4a0573cc4be543d32954"
 
 FREE_TAGS = 1
 FREE_HISTORY_HOURS = 24
@@ -38,9 +38,9 @@ def verify(key: str, device_id: str, activated_ts: int = 0) -> dict:
         Ed25519PublicKey.from_public_bytes(bytes.fromhex(PUBLIC_KEY_HEX)).verify(sig, payload)
         data = json.loads(payload)
     except (ValueError, InvalidSignature, Exception):
-        return {"licensed": False, "tags": FREE_TAGS, "dur": 0, "reason": "Invalid or corrupted key"}
+        return {"licensed": False, "tags": FREE_TAGS, "dur": 0, "reason": "Chave inválida ou corrompida"}
     if data.get("d") not in ("*", device_id):
-        return {"licensed": False, "tags": FREE_TAGS, "dur": 0, "reason": "This key belongs to a different phone"}
+        return {"licensed": False, "tags": FREE_TAGS, "dur": 0, "reason": "Esta chave pertence a outro aparelho"}
     now = int(time.time())
     exp = int(data.get("e", 0) or 0)          # absolute expiry epoch (0 = none)
     dur = int(data.get("dur", 0) or 0)        # days-from-activation (0 = none)
@@ -48,5 +48,5 @@ def verify(key: str, device_id: str, activated_ts: int = 0) -> dict:
         exp_from_activation = int(activated_ts) + dur * 86400
         exp = exp_from_activation if not exp else min(exp, exp_from_activation)
     if exp and now > exp:
-        return {"licensed": False, "tags": FREE_TAGS, "dur": dur, "reason": "Key expired"}
+        return {"licensed": False, "tags": FREE_TAGS, "dur": dur, "reason": "Chave expirada"}
     return {"licensed": True, "tags": int(data.get("t", 1)), "expiry": exp, "dur": dur, "reason": ""}

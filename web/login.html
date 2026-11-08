@@ -1,36 +1,59 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Tag Tracker – Sign in</title>
+<title data-i18n="login_title">Tag Tracker – Entrar</title>
 <link rel="stylesheet" href="static/style.css">
 <link rel="manifest" href="static/manifest.webmanifest">
 <meta name="theme-color" content="#2563eb">
 </head>
 <body class="login-body">
 <form class="login-card" id="f">
-  <div class="brand"><span class="dot"></span> Tag Tracker</div>
-  <p class="muted">Sign in to see your tag's travel history.</p>
-  <label>Username<input name="username" autocomplete="username" required autofocus></label>
-  <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
-  <button type="submit" class="primary">Sign in</button>
+  <div style="display:flex;justify-content:space-between;align-items:center;">
+    <div class="brand"><span class="dot"></span> Tag Tracker</div>
+    <select id="langSelect" class="lang-select" title="Idioma / Language" aria-label="Idioma">
+      <option value="pt-BR">PT</option>
+      <option value="en">EN</option>
+    </select>
+  </div>
+  <p class="muted" data-i18n="login_subtitle">Entre para visualizar o histórico de deslocamento da sua tag.</p>
+  <label><span data-i18n="login_user">Usuário</span><input name="username" autocomplete="username" required autofocus></label>
+  <label><span data-i18n="login_pass">Senha</span><input name="password" type="password" autocomplete="current-password" required></label>
+  <button type="submit" class="primary" data-i18n="login_btn">Entrar</button>
   <p class="error" id="err"></p>
-  <button type="button" class="link" id="server" hidden onclick="TagTrackerApp.changeServer()">Change server</button>
-  <p class="muted small" style="text-align:center;margin:4px 0 0">Not affiliated with Google. Independent, open-source. For tracking your own property.</p>
+  <button type="button" class="link" id="server" hidden onclick="TagTrackerApp.changeServer()" data-i18n="change_server">Trocar servidor</button>
+  <p class="muted small" style="text-align:center;margin:4px 0 0" data-i18n="login_legal">Não afiliado ao Google. Independente e de código aberto. Para rastreamento de propriedade própria.</p>
 </form>
+<script src="static/i18n.js"></script>
 <script>
 if (window.TagTrackerApp) document.getElementById('server').hidden = false;
+const langSel = document.getElementById('langSelect');
+if (langSel && window.I18N) {
+  langSel.value = window.I18N.lang;
+  langSel.addEventListener('change', () => window.I18N.setLang(langSel.value));
+}
 document.getElementById('f').addEventListener('submit', async (e) => {
   e.preventDefault();
   const fd = new FormData(e.target), err = document.getElementById('err');
   err.textContent = '';
-  const r = await fetch('/api/login', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({username: fd.get('username'), password: fd.get('password')})
-  });
-  if (r.ok) location.href = '/';
-  else err.textContent = (await r.json().catch(() => ({}))).detail || 'Sign in failed';
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({username: fd.get('username'), password: fd.get('password')})
+    });
+    if (r.ok) {
+      location.href = '/';
+    } else {
+      const data = await r.json().catch(() => ({}));
+      let msg = data.detail;
+      if (r.status === 401 && window.I18N) msg = window.I18N.t('login_failed');
+      else if (r.status === 429 && window.I18N) msg = window.I18N.t('login_too_many');
+      err.textContent = msg || (window.I18N ? window.I18N.t('login_generic_error') : 'Sign in failed');
+    }
+  } catch (ex) {
+    err.textContent = window.I18N ? window.I18N.t('login_generic_error') : 'Sign in failed';
+  }
 });
 </script>
 </body>
