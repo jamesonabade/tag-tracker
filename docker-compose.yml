@@ -3,7 +3,7 @@ services:
     build: .
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "${TT_HOST_PORT:-8000}:8000"
     volumes:
       - ./data:/data
     environment:
