@@ -1,0 +1,139 @@
+name: Monitor upstream projects
+
+on:
+  schedule:
+    # 08:17 in Bahia (UTC-3); scheduled GitHub runs may be delayed.
+    - cron: "17 11 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: monitor-upstream-projects
+  cancel-in-progress: false
+
+jobs:
+  check-upstreams:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check upstream changes and open GitHub Issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            // Baselines captured on 2026-11-08.
+            const sources = [
+              {
+                label: "Tag Tracker original",
+                owner: "Shekh-Muhsen",
+                repo: "tag-tracker",
+                baseline: "b1fd2b20d589711de18c30ebf7c833c340e4ad02",
+                releaseBaseline: "v3.23",
+              },
+              {
+                label: "GoogleFindMyTools",
+                owner: "leonboe1",
+                repo: "GoogleFindMyTools",
+                baseline: "660be5395702ff7f1a6174f4ec4c865a57c7b527",
+                // The Tag Tracker build pins an older commit.
+                pinned: "d46e9528578015b51d3b84dd91bf8f16e9ab850f",
+              },
+            ];
+
+            for (const source of sources) {
+              const upstream = source.owner + "/" + source.repo;
+              const latest = await github.rest.repos.getCommit({
+                owner: source.owner, repo: source.repo, ref: "main",
+              });
+              const sha = latest.data.sha;
+
+              let release = null;
+              if (source.releaseBaseline) {
+                try {
+                  const response = await github.rest.repos.getLatestRelease({
+                    owner: source.owner, repo: source.repo,
+                  });
+                  release = response.data;
+                } catch (error) {
+                  if (error.status !== 404) throw error;
+                }
+              }
+
+              const releaseChanged = !!release &&
+                release.tag_name !== source.releaseBaseline;
+              if (sha === source.baseline && !releaseChanged) {
+                core.info(upstream + ": no changes since the baseline.");
+                continue;
+              }
+
+              let comparison = { status: "identical", ahead_by: 0, files: [] };
+              if (sha !== source.baseline) {
+                const response = await github.request(
+                  "GET /repos/{owner}/{repo}/compare/{basehead}", {
+                    owner: source.owner,
+                    repo: source.repo,
+                    basehead: source.baseline + "..." + sha,
+                  }
+                );
+                comparison = response.data;
+              }
+
+              const releaseSuffix = releaseChanged ? "-" + release.tag_name : "";
+              const title = "[Upstream] " + source.label + ": " +
+                sha.slice(0, 12) + releaseSuffix;
+              // Searching all Issues also checks closed ones, preventing duplicates.
+              const q = "repo:" + context.repo.owner + "/" + context.repo.repo +
+                ' is:issue in:title "' + title + '"';
+              const existing = await github.rest.search.issuesAndPullRequests({
+                q, per_page: 30,
+              });
+              if (existing.data.items.some((item) => item.title === title)) {
+                core.info("Already reported: " + title);
+                continue;
+              }
+
+              const files = comparison.files || [];
+              const fileLines = files.slice(0, 35).map((file) =>
+                "- " + file.status + ": " + file.filename +
+                " (+" + file.additions + "/-" + file.deletions + ")"
+              );
+              if (files.length > 35) {
+                fileLines.push("- ... and " + (files.length - 35) + " more files");
+              }
+
+              const body = [
+                "## Upstream update detected",
+                "",
+                "Notification: @" + context.repo.owner + " — assigned to you for GitHub email/mobile alerts (subject to account preferences).",
+                "",
+                "**Project:** https://github.com/" + upstream,
+                "**New upstream commit:** " + sha,
+                "**Monitoring baseline:** " + source.baseline,
+                "**Comparison:** https://github.com/" + upstream +
+                  "/compare/" + source.baseline + "..." + sha,
+                "**Comparison status:** " + comparison.status +
+                  " (" + comparison.ahead_by + " commits ahead)",
+                source.pinned ? "**GoogleFindMyTools commit pinned by Tag Tracker:** " + source.pinned : "",
+                source.releaseBaseline ?
+                  "**Latest release:** " + (release ? release.tag_name : "not found") +
+                  " (initial: " + source.releaseBaseline + ")" : "",
+                "",
+                "### Files changed since monitoring began",
+                ...(fileLines.length ? fileLines : ["No changed files in the commit comparison."]),
+                "",
+                "### Review before incorporating",
+                "This is a **notification only**. No code is merged, no dependency is updated, and no deployment or APK build is triggered by this monitor.",
+                "Review compatibility with the pt-BR customizations and the GoogleFindMyTools vendor patches before updating.",
+              ].filter(Boolean).join("\n");
+
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title,
+                body,
+                assignees: [context.repo.owner],
+              });
+              core.info("Created monitoring issue: " + title);
+            }
