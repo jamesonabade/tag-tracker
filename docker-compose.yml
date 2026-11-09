@@ -6,6 +6,7 @@ services:
       - "${TT_HOST_PORT:-8000}:8000"
     volumes:
       - ./data:/data
+      - ./web:/app/web:ro
     environment:
       TT_POLL_MINUTES: "10"
       # Set to "1" once you serve the site over HTTPS

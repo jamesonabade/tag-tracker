@@ -6,7 +6,7 @@
 <title data-i18n="app_title">Tag Tracker</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="static/style.css">
+<link rel="stylesheet" href="static/style.css?v=3.23.1">
 <link rel="manifest" href="static/manifest.webmanifest">
 <meta name="theme-color" content="#0f172a">
 </head>
@@ -61,6 +61,10 @@
     <div class="float-replay-title" id="floatReplayTitle">Replay do Percurso</div>
     <div class="float-replay-sub" id="floatReplaySub">Ponto 1 de 1</div>
   </div>
+  <button id="floatSpeedBtn" class="float-replay-pill pressable" title="Alterar velocidade" aria-label="Velocidade">1x</button>
+  <button id="floatLoopBtn" class="float-replay-btn pressable" title="Repetir em loop" aria-label="Loop">
+    <i class="fa-solid fa-repeat"></i>
+  </button>
   <button id="floatStopBtn" class="float-replay-btn stop pressable" title="Parar replay" aria-label="Parar">
     <i class="fa-solid fa-stop"></i>
   </button>
@@ -190,6 +194,20 @@
           <input type="range" id="scrub" min="0" max="0" value="0" class="modern-slider">
         </div>
       </div>
+      <div class="playback-extra-controls">
+        <div class="speed-selector">
+          <span class="speed-label" data-i18n="speed_label">Velocidade:</span>
+          <div class="speed-chips" id="speedChips">
+            <button type="button" class="speed-chip on" data-speed="1">1x</button>
+            <button type="button" class="speed-chip" data-speed="2">2x</button>
+            <button type="button" class="speed-chip" data-speed="4">4x</button>
+          </div>
+        </div>
+        <button type="button" id="loopBtn" class="loop-toggle-btn pressable" title="Repetir percurso em loop" aria-label="Repetir em loop">
+          <i class="fa-solid fa-repeat"></i>
+          <span data-i18n="loop">Loop</span>
+        </button>
+      </div>
     </div>
 
     <!-- ================= SEÇÃO: PONTOS DO MAPA ================= -->
@@ -277,7 +295,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="static/i18n.js"></script>
-<script src="static/app.js"></script>
+<script src="static/i18n.js?v=3.23.1"></script>
+<script src="static/app.js?v=3.23.1"></script>
 </body>
 </html>

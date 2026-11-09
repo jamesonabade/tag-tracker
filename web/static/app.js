@@ -251,9 +251,75 @@
     renderLicense(res.license);
   }
 
+  // Suporte a clicar e arrastar (Click & Drag) e rolagem com a roda do mouse no carrossel de tags
+  let isCarMouseDown = false;
+  let carStartX = 0;
+  let carScrollLeft = 0;
+  let carHasDragged = false;
+  const carDragThreshold = 5;
+
+  function initCarouselDrag(car) {
+    if (!car || car._dragInitialized) return;
+    car._dragInitialized = true;
+
+    // Evita o arrasto nativo de imagens/elementos do navegador
+    car.addEventListener('dragstart', (e) => e.preventDefault());
+
+    // Rolagem horizontal suave com a roda do mouse (dispensa Shift + Scroll)
+    car.addEventListener('wheel', (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        car.scrollLeft += e.deltaY;
+      }
+    }, { passive: false });
+
+    // Arrasto com o clique do mouse (Click & Drag)
+    car.addEventListener('mousedown', (e) => {
+      if (e.button !== 0) return; // Apenas botão principal (esquerdo)
+      isCarMouseDown = true;
+      carHasDragged = false;
+      carStartX = e.pageX - car.offsetLeft;
+      carScrollLeft = car.scrollLeft;
+      car.classList.add('is-dragging');
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isCarMouseDown) return;
+      const x = e.pageX - car.offsetLeft;
+      const walk = (x - carStartX);
+      if (Math.abs(walk) > carDragThreshold) {
+        carHasDragged = true;
+      }
+      if (carHasDragged) {
+        e.preventDefault();
+        car.scrollLeft = carScrollLeft - walk;
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (!isCarMouseDown) return;
+      isCarMouseDown = false;
+      car.classList.remove('is-dragging');
+      // Mantém carHasDragged por um pequeno intervalo para que o evento 'click' dos chips seja descartado
+      setTimeout(() => {
+        carHasDragged = false;
+      }, 60);
+    });
+
+    // Intercepta e bloqueia o clique nos chips se o usuário estava arrastando a lista
+    car.addEventListener('click', (e) => {
+      if (carHasDragged) {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+      }
+    }, true);
+  }
+
   function renderTagCarousel() {
     const car = $('tagCarousel');
     if (!car) return;
+    initCarouselDrag(car);
     if (!devices.length) {
       car.innerHTML = `<div class="tag-chip"><span class="tag-chip-name">${t('no_tags_waiting')}</span></div>`;
       return;
@@ -420,17 +486,45 @@
       .addTo(layers.live);
   }
 
-  // ---------- Histórico de Trajetos ----------
-  function updateLayersVisibility() {
+  // ---------- Histórico de Trajetos & Filtros de Visualização ----------
+  // Desenha o traçado conectando exclusivamente os pontos que passam pelos filtros ativos
+  function renderTrack() {
+    layers.track.clearLayers();
     const showTrack = $('showTrack') ? $('showTrack').checked : true;
+    if (!showTrack) {
+      if (map.hasLayer(layers.track)) map.removeLayer(layers.track);
+      return;
+    }
+
+    const activePoints = getFilteredPoints();
+    const d = devices.find((x) => x.id === deviceId);
+    const color = d?.color || '#0284c7';
+    const lls = activePoints.map((p) => [p.lat, p.lon]);
+    
+    if (lls.length > 1) {
+      L.polyline(lls, { color, weight: 3.5, opacity: 0.85 }).addTo(layers.track);
+    }
+
+    if (!map.hasLayer(layers.track)) {
+      map.addLayer(layers.track);
+    }
+  }
+
+  // Obtém os pontos do histórico de acordo com os filtros de visualização selecionados
+  function getFilteredPoints() {
     const showDev = $('showDevicePoints') ? $('showDevicePoints').checked : true;
     const showNet = $('showNetworkPoints') ? $('showNetworkPoints').checked : true;
+    return points.filter((p) => {
+      if (p.is_own_report) return showDev;
+      return showNet;
+    });
+  }
 
-    if (showTrack) {
-      if (!map.hasLayer(layers.track)) map.addLayer(layers.track);
-    } else {
-      if (map.hasLayer(layers.track)) map.removeLayer(layers.track);
-    }
+  function updateLayersVisibility() {
+    renderTrack();
+
+    const showDev = $('showDevicePoints') ? $('showDevicePoints').checked : true;
+    const showNet = $('showNetworkPoints') ? $('showNetworkPoints').checked : true;
 
     if (showDev) {
       if (!map.hasLayer(layers.devicePoints)) map.addLayer(layers.devicePoints);
@@ -452,33 +546,88 @@
     layers.networkPoints.clearLayers();
     layers.play.clearLayers();
     if (!deviceId) { points = []; renderStats(); return; }
+    const d = devices.find((x) => x.id === deviceId);
     const [start, end] = currentRange();
     const res = await data.history(deviceId, start, end);
     points = (res.points || []).filter((p) => p.lat != null);
-    const color = devices.find((d) => d.id === deviceId)?.color || '#0284c7';
-    const lls = points.map((p) => [p.lat, p.lon]);
-    
-    if (lls.length > 1) {
-      L.polyline(lls, { color, weight: 3.5, opacity: 0.85 }).addTo(layers.track);
-    }
+
+    // Posição e raio de precisão do ponto "Mais recente" para diferenciar pontos próximos e afastados
+    const latestLat = (d && d.last_lat != null) ? d.last_lat : (points.length ? points[points.length - 1].lat : null);
+    const latestLon = (d && d.last_lon != null) ? d.last_lon : (points.length ? points[points.length - 1].lon : null);
+    const latestAccuracy = (d && d.last_accuracy != null) ? Number(d.last_accuracy) : (points.length && points[points.length - 1].accuracy ? Number(points[points.length - 1].accuracy) : 0);
+    const hasLatest = latestLat != null && latestLon != null;
+
+    // Rastreia balões já posicionados fora do raio para evitar sobreposição excessiva de alfinetes no mesmo local exato (< 15m)
+    const placedDistantBalloons = [];
 
     points.forEach((p, i) => {
       if (p.is_own_report) {
-        // Pontos Info Dispositivo: pequenos e discretos sem pulsar, assim como a rede Find Hub
-        L.circleMarker([p.lat, p.lon], {
-          radius: 4.5,
-          color: '#ffffff',
-          weight: 1.5,
-          fillColor: '#0284c7',
-          fillOpacity: 0.9,
-          zIndexOffset: 30
-        })
-        .bindPopup(`<div class="popup"><b><i class="fa-solid fa-mobile-screen-button" style="color: #0284c7; margin-right: 4px;"></i>Info dispositivo</b><br>${fmt(p.ts)}`
-          + `${p.accuracy ? `<br>± ${Math.round(p.accuracy)} m` : ''}<br>`
-          + `<span class="muted">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</span></div>`)
-        .addTo(layers.devicePoints);
+        // Distância até o ponto mais recente
+        const distFromLatest = hasLatest ? map.distance([p.lat, p.lon], [latestLat, latestLon]) : Infinity;
+        // Ponto dentro do raio de precisão do ponto mais recente
+        const isInsideRadius = hasLatest && (distFromLatest <= Math.max(15, latestAccuracy));
+
+        if (isInsideRadius) {
+          // Dentro do Raio (Próximos do ponto "Mais recente"):
+          // Mantêm a aparência simples e discreta (circleMarker pequeno em azul #0284c7, borda branca e estático)
+          L.circleMarker([p.lat, p.lon], {
+            radius: 4.5,
+            color: '#ffffff',
+            weight: 1.5,
+            fillColor: '#0284c7',
+            fillOpacity: 0.9,
+            zIndexOffset: 30
+          })
+          .bindPopup(`<div class="popup"><b><i class="fa-solid fa-mobile-screen-button" style="color: #0284c7; margin-right: 4px;"></i>Info dispositivo</b><br>${fmt(p.ts)}`
+            + `${p.accuracy ? `<br>± ${Math.round(p.accuracy)} m` : ''}<br>`
+            + `<span class="muted">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</span></div>`)
+          .addTo(layers.devicePoints);
+        } else {
+          // Fora do Raio (Pontos mais afastados):
+          // Exibidos no formato de balão com alfinete e haste (pin-balloon-device), destacando a localização com badge "Info dispositivo"
+          const hasNearbyBalloon = placedDistantBalloons.some((b) => map.distance([p.lat, p.lon], [b.lat, b.lon]) < 15);
+
+          if (!hasNearbyBalloon) {
+            placedDistantBalloons.push({ lat: p.lat, lon: p.lon });
+            const devDivIcon = L.divIcon({
+              className: 'custom-div-icon',
+              html: `<div class="pin-balloon-device">
+                       <div class="pin-badge-device"><span class="pulse-dot"></span><span>Info dispositivo</span></div>
+                       <div class="pin-head-device">
+                         <i class="fa-solid fa-mobile-screen-button"></i>
+                       </div>
+                       <div class="pin-stem-device"></div>
+                     </div>`,
+              iconSize: [110, 58],
+              iconAnchor: [55, 58],
+              popupAnchor: [0, -58]
+            });
+
+            L.marker([p.lat, p.lon], {
+              icon: devDivIcon,
+              zIndexOffset: 600
+            })
+            .bindPopup(`<div class="popup"><b><i class="fa-solid fa-mobile-screen-button" style="color: #0284c7; margin-right: 4px;"></i>Info dispositivo</b><br>${fmt(p.ts)}`
+              + `${p.accuracy ? `<br>± ${Math.round(p.accuracy)} m` : ''}<br>`
+              + `<span class="muted">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</span></div>`)
+            .addTo(layers.devicePoints);
+          } else {
+            L.circleMarker([p.lat, p.lon], {
+              radius: 4.5,
+              color: '#ffffff',
+              weight: 1.5,
+              fillColor: '#0284c7',
+              fillOpacity: 0.9,
+              zIndexOffset: 35
+            })
+            .bindPopup(`<div class="popup"><b><i class="fa-solid fa-mobile-screen-button" style="color: #0284c7; margin-right: 4px;"></i>Info dispositivo</b><br>${fmt(p.ts)}`
+              + `${p.accuracy ? `<br>± ${Math.round(p.accuracy)} m` : ''}<br>`
+              + `<span class="muted">${p.lat.toFixed(5)}, ${p.lon.toFixed(5)}</span></div>`)
+            .addTo(layers.devicePoints);
+          }
+        }
       } else {
-        // Pontos normais do histórico (rede Find Hub) - Z-Index 10
+        // Pontos normais do histórico (rede Find Hub) - Z-Index 10: pequenos marcadores circulares discretos em tom ardósia (#64748b)
         L.circleMarker([p.lat, p.lon], {
           radius: 4,
           color: '#ffffff',
@@ -494,11 +643,13 @@
       }
     });
 
+    renderTrack();
     updateLayersVisibility();
 
     if (!fitted) {
+      const activeLls = getFilteredPoints().map((p) => [p.lat, p.lon]);
+      const lls = activeLls.length ? activeLls : points.map((p) => [p.lat, p.lon]);
       const bounds = lls.length ? L.latLngBounds(lls) : null;
-      const d = devices.find((x) => x.id === deviceId);
       if (bounds) {
         const offsets = getMapVisibleOffsets();
         map.fitBounds(bounds, {
@@ -511,31 +662,9 @@
       }
       fitted = true;
     }
-    const scrub = $('scrub');
-    if (scrub) {
-      scrub.max = Math.max(0, points.length - 1); scrub.value = scrub.max;
-    }
-    const scrubLabel = $('scrubLabel');
-    if (scrubLabel) scrubLabel.innerHTML = '&nbsp;';
-    
-    const historyCount = $('historyCount');
-    if (historyCount) {
-      const countStr = window.I18N ? window.I18N.formatNumber(points.length) : points.length.toLocaleString();
-      historyCount.textContent = `${countStr} ${t('stat_locations')}`;
-    }
     
     updateScrubRange();
     renderStats();
-  }
-
-  // Obtém os pontos do histórico de acordo com os filtros de visualização selecionados
-  function getFilteredPoints() {
-    const showDev = $('showDevicePoints') ? $('showDevicePoints').checked : true;
-    const showNet = $('showNetworkPoints') ? $('showNetworkPoints').checked : true;
-    return points.filter((p) => {
-      if (p.is_own_report) return showDev;
-      return showNet;
-    });
   }
 
   function updateScrubRange() {
@@ -562,9 +691,10 @@
   }
 
   function renderStats() {
+    const activePoints = getFilteredPoints();
     let dist = 0;
-    for (let i = 1; i < points.length; i++) dist += km(points[i - 1], points[i]);
-    const span = points.length ? points[points.length - 1].ts - points[0].ts : 0;
+    for (let i = 1; i < activePoints.length; i++) dist += km(activePoints[i - 1], activePoints[i]);
+    const span = activePoints.length ? activePoints[activePoints.length - 1].ts - activePoints[0].ts : 0;
     const days = span / 86400;
     const numFmt = (n) => (window.I18N ? window.I18N.formatNumber(n) : n.toLocaleString());
     const statsEl = $('stats');
@@ -574,7 +704,7 @@
     statsEl.innerHTML = `
       <div class="stat-card">
         <div class="stat-label">${t('stat_points')}</div>
-        <div class="stat-value">${numFmt(points.length)}</div>
+        <div class="stat-value">${numFmt(activePoints.length)}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">${t('stat_distance')}</div>
@@ -585,16 +715,65 @@
         <div class="stat-value">${durVal}</div>
       </div>
     `;
+    const historyCount = $('historyCount');
+    if (historyCount) {
+      const countStr = numFmt(activePoints.length);
+      historyCount.textContent = `${countStr} ${t('stat_locations')}`;
+    }
   }
 
-  // ---------- Replay / Reprodução Dinâmica com Filtro e Extensão do Mapa ----------
+  // ---------- Replay / Reprodução Dinâmica com Filtro, Velocidade e Loop ----------
+  let playSpeed = 1;
+  let playLoop = false;
+
   const floatingReplayBar = $('floatingReplayBar');
   const floatPlayBtn = $('floatPlayBtn');
   const floatPlayIcon = $('floatPlayIcon');
   const floatStopBtn = $('floatStopBtn');
+  const floatSpeedBtn = $('floatSpeedBtn');
+  const floatLoopBtn = $('floatLoopBtn');
   const floatReplayTitle = $('floatReplayTitle');
   const floatReplaySub = $('floatReplaySub');
   const floatReplayBarFill = $('floatReplayBarFill');
+  const loopBtn = $('loopBtn');
+
+  function setPlaySpeed(speed) {
+    playSpeed = Number(speed) || 1;
+    document.querySelectorAll('.speed-chip').forEach((chip) => {
+      chip.classList.toggle('on', Number(chip.dataset.speed) === playSpeed);
+    });
+    if (floatSpeedBtn) {
+      floatSpeedBtn.textContent = playSpeed + 'x';
+    }
+    if (playTimer) {
+      restartPlayTimer();
+    }
+  }
+
+  function cyclePlaySpeed() {
+    if (playSpeed === 1) setPlaySpeed(2);
+    else if (playSpeed === 2) setPlaySpeed(4);
+    else setPlaySpeed(1);
+  }
+
+  function togglePlayLoop() {
+    playLoop = !playLoop;
+    updateLoopVisuals();
+  }
+
+  function updateLoopVisuals() {
+    if (loopBtn) {
+      loopBtn.classList.toggle('active', playLoop);
+    }
+    if (floatLoopBtn) {
+      floatLoopBtn.classList.toggle('active', playLoop);
+    }
+  }
+
+  function getStepMs(count) {
+    const baseStepMs = Math.max(150, Math.min(850, 20000 / Math.max(1, count)));
+    return Math.max(40, Math.round(baseStepMs / playSpeed));
+  }
 
   function updateFloatingMiniPlayer(idx, activePoints, p, labelText) {
     if (!floatingReplayBar) return;
@@ -664,6 +843,36 @@
     if (floatingReplayBar) floatingReplayBar.hidden = true;
   }
 
+  function restartPlayTimer() {
+    if (playTimer) {
+      clearInterval(playTimer);
+      playTimer = null;
+    }
+    const activePoints = getFilteredPoints();
+    if (!activePoints.length) return;
+
+    const scrub = $('scrub');
+    const stepMs = getStepMs(activePoints.length);
+
+    playTimer = setInterval(() => {
+      const currentVal = Number(scrub.value);
+      const nextIdx = currentVal + 1;
+      if (nextIdx >= activePoints.length) {
+        if (playLoop) {
+          scrub.value = 0;
+          showAt(0);
+          return;
+        }
+        clearInterval(playTimer);
+        playTimer = null;
+        setPlayButtonState(false);
+        return;
+      }
+      scrub.value = nextIdx;
+      showAt(nextIdx);
+    }, stepMs);
+  }
+
   function startOrResumePlay() {
     const activePoints = getFilteredPoints();
     if (!activePoints.length) {
@@ -696,19 +905,7 @@
     const initialIdx = Number(scrub.value);
     showAt(initialIdx);
 
-    const stepMs = Math.max(150, Math.min(850, 20000 / activePoints.length));
-    playTimer = setInterval(() => {
-      const currentVal = Number(scrub.value);
-      const nextIdx = currentVal + 1;
-      if (nextIdx >= activePoints.length) {
-        clearInterval(playTimer);
-        playTimer = null;
-        setPlayButtonState(false);
-        return;
-      }
-      scrub.value = nextIdx;
-      showAt(nextIdx);
-    }, stepMs);
+    restartPlayTimer();
   }
 
   const scrubEl = $('scrub');
@@ -745,6 +942,36 @@
       e.stopPropagation();
       stopPlay();
       layers.play.clearLayers();
+    });
+  }
+
+  // Controles de Velocidade (Card e Mini Player Flutuante)
+  document.querySelectorAll('.speed-chip').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      setPlaySpeed(Number(btn.dataset.speed));
+    });
+  });
+
+  if (floatSpeedBtn) {
+    floatSpeedBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cyclePlaySpeed();
+    });
+  }
+
+  // Controles de Loop (Card e Mini Player Flutuante)
+  if (loopBtn) {
+    loopBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePlayLoop();
+    });
+  }
+
+  if (floatLoopBtn) {
+    floatLoopBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      togglePlayLoop();
     });
   }
 
@@ -982,6 +1209,7 @@
       store.set('showDevicePoints', $('showDevicePoints').checked ? '1' : '0');
       updateLayersVisibility();
       updateScrubRange();
+      renderStats();
     });
   }
 
@@ -992,6 +1220,7 @@
       store.set('showNetworkPoints', $('showNetworkPoints').checked ? '1' : '0');
       updateLayersVisibility();
       updateScrubRange();
+      renderStats();
     });
   }
 

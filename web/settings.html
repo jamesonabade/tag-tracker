@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <title>Configurações – Tag Tracker</title>
+  <script>
+    window.tailwind = {
+      darkMode: 'class'
+    };
+  </script>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    
+    * {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      box-sizing: border-box;
+    }
+
+    body {
+      background-color: #f8fafc;
+      color: #0f172a;
+      touch-action: pan-y;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .dark body {
+      background-color: #090d16;
+      color: #f8fafc;
+    }
+
+    .pressable {
+      transition: transform 0.12s ease, opacity 0.12s ease, background-color 0.15s ease;
+    }
+    .pressable:active {
+      transform: scale(0.97);
+      opacity: 0.88;
+    }
+
+    .switch-track {
+      transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .switch-thumb {
+      transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.92); }
+    }
+    .status-pulse {
+      animation: subtlePulse 2.5s infinite ease-in-out;
+    }
+
+    @keyframes spinSync {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .spinning {
+      animation: spinSync 0.8s linear infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+  <!-- BARRA DE TÍTULO SUPERIOR (STICKY APP BAR) -->
+  <header class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800 px-4 pb-3 flex items-center justify-between sticky top-0 z-30" style="padding-top: max(34px, env(safe-area-inset-top));">
+    <div class="flex items-center gap-3">
+      <button onclick="handleGoBack()" class="w-9 h-9 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 flex items-center justify-center pressable shadow-xs">
+        <i class="fa-solid fa-arrow-left text-sm"></i>
+      </button>
+      <div>
+        <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white leading-tight">Configurações</h1>
+        <p class="text-[11px] font-medium text-slate-400 dark:text-slate-400">Tag Tracker <span class="font-mono text-emerald-600 dark:text-emerald-400 font-bold" id="appVersionText">v3.23.1</span></p>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button onclick="handleOpenHelp()" class="px-3 py-1.5 rounded-full bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60 text-xs font-bold flex items-center gap-1.5 pressable shadow-xs">
+        <i class="fa-regular fa-circle-question"></i>
+        <span>Guia</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- CONTEÚDO PRINCIPAL ROLÁVEL -->
+  <main id="settingsContent" class="flex-1 max-w-xl w-full mx-auto p-4 space-y-4 pb-28">
+
+    <!-- =====================================================================
+         CARD HERO DE BOAS-VINDAS & STATUS OPERACIONAL
+         ===================================================================== -->
+    <section id="heroStatusCard" class="bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
+      <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+      
+      <div class="flex items-start justify-between mb-2 relative z-10">
+        <div class="flex items-center gap-3">
+          <div id="heroStatusIconBg" class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 text-lg">
+            <i id="heroStatusIcon" class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 id="heroStatusTitle" class="text-sm font-bold leading-tight">Sistema Pronto e Ativo</h2>
+              <span id="heroStatusBadge" class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-400/30">Operacional</span>
+            </div>
+            <p id="heroStatusSubtitle" class="text-xs text-slate-300 mt-0.5">Tags sincronizadas · Verificação periódica ativa</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="text-xs text-slate-300/90 leading-relaxed pt-1 pb-2 border-b border-slate-700/60 relative z-10">
+        O Find Hub mostra apenas a última posição da sua tag. Este app salva o histórico completo e avisa se ela se mover. Primeira vez aqui? Leia o guia rápido primeiro – ele explica tudo.
+      </p>
+
+      <!-- Indicador das 3 Etapas Rápidas -->
+      <div class="grid grid-cols-3 gap-2 pt-2.5 text-xs relative z-10">
+        <div id="stepPillAuth" class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-2 flex flex-col items-center text-center">
+          <div class="flex items-center gap-1 text-[11px] font-bold text-emerald-400 mb-0.5">
+            <i id="stepPillAuthIcon" class="fa-solid fa-circle-check"></i>
+            <span>Google</span>
+          </div>
+          <span id="stepPillAuthDesc" class="text-[10px] text-slate-300 truncate w-full">Conectado</span>
+        </div>
+
+        <div id="stepPillKeys" class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-2 flex flex-col items-center text-center">
+          <div class="flex items-center gap-1 text-[11px] font-bold text-emerald-400 mb-0.5">
+            <i id="stepPillKeysIcon" class="fa-solid fa-key"></i>
+            <span>Chaves</span>
+          </div>
+          <span id="stepPillKeysDesc" class="text-[10px] text-slate-300 truncate w-full">Desbloqueado</span>
+        </div>
+
+        <div id="stepPillBg" class="bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-2 flex flex-col items-center text-center">
+          <div class="flex items-center gap-1 text-[11px] font-bold text-emerald-400 mb-0.5">
+            <i id="stepPillBgIcon" class="fa-solid fa-clock"></i>
+            <span>Background</span>
+          </div>
+          <span id="stepPillBgDesc" class="text-[10px] text-slate-300 truncate w-full">Ativo (15m)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALERTA DINÂMICO DE CHAVES PENDENTES -->
+    <div id="warningBanner" class="hidden bg-amber-50 dark:bg-amber-950/40 border border-amber-300 dark:border-amber-800 rounded-2xl p-3.5 shadow-sm">
+      <div class="flex items-start gap-3">
+        <div class="w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+          <i class="fa-solid fa-triangle-exclamation text-base"></i>
+        </div>
+        <div class="flex-1">
+          <h3 class="text-xs font-bold text-amber-900 dark:text-amber-200">Ação Necessária: Etapa 2 Pendente</h3>
+          <p class="text-xs text-amber-800 dark:text-amber-300 mt-1 leading-relaxed">
+            Você está conectado e suas tags estão listadas, mas o mapa continuará vazio até concluir a etapa 2. Toque em “Desbloquear chaves de criptografia” e insira o bloqueio de tela do celular.
+          </p>
+          <button onclick="handleUnlockKeys()" class="mt-2.5 px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs flex items-center gap-1.5 pressable shadow-sm">
+            <i class="fa-solid fa-key"></i>
+            <span>Desbloquear Chaves E2EE Agora</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================================
+         SEÇÃO 1: CONECTE SUA CONTA GOOGLE (EXPLICAÇÕES INTEGRAIS)
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+            <i class="fa-brands fa-google text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">1. Conecte sua conta Google</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Acesso seguro e ponta a ponta (E2EE)</p>
+          </div>
+        </div>
+        <span id="accountStatusPill" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+          Conectado
+        </span>
+      </div>
+
+      <!-- Caixa de Informações Completas -->
+      <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        <p>
+          O Google requer <strong>DUAS etapas</strong>, ambas em páginas oficiais do próprio Google (o app nunca vê sua senha ou PIN):
+        </p>
+        <div class="grid grid-cols-1 gap-1.5 pl-1 font-medium">
+          <div class="flex items-start gap-2">
+            <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <span><strong>Login da sua conta:</strong> Autenticação padrão do Google.</span>
+          </div>
+          <div class="flex items-start gap-2">
+            <span class="w-4 h-4 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <span><strong>Confirmação de bloqueio de tela:</strong> Libera as chaves para <strong>DESCRIPTOGRAFAR</strong> as localizações.</span>
+          </div>
+        </div>
+        <div class="p-2 rounded-lg bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/50 text-[11px] text-indigo-900 dark:text-indigo-300 leading-normal flex items-start gap-1.5">
+          <i class="fa-solid fa-circle-info text-indigo-500 mt-0.5 shrink-0"></i>
+          <span>O Google exige isso para a criptografia ponta a ponta – nenhum app pode pular essa etapa. Atualizar o app mais tarde <strong>NÃO</strong> desconecta sua conta.</span>
+        </div>
+      </div>
+
+      <!-- Dados da Conta Conectada -->
+      <div id="accountConnectedBox" class="bg-emerald-50/50 dark:bg-emerald-950/30 rounded-xl p-3 border border-emerald-200/80 dark:border-emerald-800/60 flex items-center justify-between">
+        <div class="flex items-center gap-2.5 overflow-hidden">
+          <div class="w-9 h-9 rounded-full bg-indigo-600 text-white font-extrabold flex items-center justify-center text-xs shrink-0 shadow-sm" id="userAvatarText">
+            G
+          </div>
+          <div class="truncate">
+            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 truncate" id="userEmailDisplay">Conectado</div>
+            <div class="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-lock text-[9px]"></i>
+              <span id="accountUnlockStatusText">✓ Tudo pronto – o app pode ler e descriptografar suas tags.</span>
+            </div>
+          </div>
+        </div>
+        <button onclick="handleSignInGoogle()" class="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-bold px-2 py-1 pressable shrink-0">
+          Alterar
+        </button>
+      </div>
+
+      <!-- Botão Primário: Conectar Conta Google (Guiado) -->
+      <button onclick="handleGuidedLogin()" id="btnGuidedConnect" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm pressable">
+        <i class="fa-solid fa-link"></i>
+        <span id="btnGuidedConnectText">🔗 Conectar conta Google (guiado)</span>
+      </button>
+
+      <!-- Botões Individuais -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+        <div class="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+          Prefere fazer as duas etapas separadamente? Os botões individuais estão abaixo:
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="handleSignInGoogle()" id="btnSignInIndividual" class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/70 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 pressable">
+            <i class="fa-brands fa-google text-slate-500 dark:text-slate-400"></i>
+            <span id="btnSignInIndividualText">Entrar com Google</span>
+          </button>
+          <button onclick="handleUnlockKeys()" id="btnUnlockIndividual" class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/70 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold flex items-center justify-center gap-1.5 pressable">
+            <i class="fa-solid fa-key text-slate-500 dark:text-slate-400"></i>
+            <span id="btnUnlockIndividualText">Desbloquear Chaves</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Opção B (Importar do PC) -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5">
+        <div class="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+          — ou Opção B (Importar do PC) —
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+          Se as etapas acima falharem, execute a configuração no PC uma vez (<code class="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-[10px]">python -m server.manage google-login</code>), copie o arquivo <code class="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-[10px]">data/google_secrets.json</code> gerado para este celular e importe-o aqui. Nenhum novo login será necessário no celular.
+        </p>
+        <button onclick="handleImportSecrets()" class="w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/70 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-center gap-1.5 pressable">
+          <i class="fa-solid fa-file-import text-slate-500 dark:text-slate-400"></i>
+          <span>Importar arquivo de login (google_secrets.json)</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 2: VERIFICAÇÃO EM SEGUNDO PLANO & BATERIA
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">2. Verificação em segundo plano</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Agendador eficiente Android WorkManager</p>
+          </div>
+        </div>
+        
+        <button onclick="handleToggleTracking()" id="switchTracking" class="w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner">
+          <div id="thumbTracking" class="w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6"></div>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-1.5">
+        <p>
+          O app verifica o Find Hub em segundo plano usando o <strong>Android WorkManager</strong> (agendador eficiente do Google) e salva todas as localizações.
+        </p>
+        <div class="p-2 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-100 dark:border-emerald-900/50 text-[11px] text-emerald-900 dark:text-emerald-300 leading-normal">
+          ✓ <strong>Consome pouquíssima bateria:</strong> acorda apenas por alguns segundos por checagem, fecha a conexão em seguida e <strong>NÃO usa permissão de GPS</strong> (as posições vêm da rede em nuvem do Google). O intervalo mínimo do Android é de 15 minutos; escolha um maior para gastar ainda menos bateria.
+        </div>
+      </div>
+
+      <!-- Frequência e Chips -->
+      <div>
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Frequência de Verificação:</span>
+          <span id="intervalBadge" class="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded-md">
+            Atualmente a cada 15 minutos.
+          </span>
+        </div>
+
+        <div class="grid grid-cols-5 gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/80 rounded-xl border border-slate-200/80 dark:border-slate-800 text-xs font-bold text-center">
+          <button onclick="handleSetInterval(15)" id="chip15" class="py-1.5 rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm pressable transition-all">15 min</button>
+          <button onclick="handleSetInterval(30)" id="chip30" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 pressable transition-all">30 min</button>
+          <button onclick="handleSetInterval(60)" id="chip60" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 pressable transition-all">60 min</button>
+          <button onclick="handleSetInterval(120)" id="chip120" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 pressable transition-all">120 min</button>
+          <button onclick="handleSetInterval(240)" id="chip240" class="py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 pressable transition-all">240 min</button>
+        </div>
+
+        <p id="intervalExplainer" class="text-[11px] text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+          Intervalo maior = menos bateria. 240 min é a opção de máxima economia.
+        </p>
+
+        <!-- Botão Bateria & Atividade -->
+        <button onclick="handleOpenBatteryActivity()" class="mt-2 w-full py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold flex items-center justify-between pressable">
+          <span>Veja exatamente o que o app faz e seu tempo ativo:</span>
+          <span class="text-indigo-600 dark:text-indigo-400 flex items-center gap-1 font-extrabold">Bateria & atividade →</span>
+        </button>
+      </div>
+
+      <!-- Execução Irrestrita de Bateria -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+        <div class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+          <strong>Opcional:</strong> se o seu celular (Xiaomi, Samsung, etc.) encerra aplicativos em segundo plano, permita a execução irrestrita para evitar que verificações sejam ignoradas. Não é necessário na maioria dos aparelhos.
+        </div>
+        <div class="flex items-center justify-between bg-slate-50 dark:bg-slate-900/60 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800">
+          <div class="flex items-center gap-2">
+            <span id="batteryIgnoreText" class="text-emerald-600 dark:text-emerald-400 text-xs font-bold">✓ Execução irrestrita em segundo plano permitida.</span>
+          </div>
+          <button onclick="handleRequestIgnoreBattery()" id="btnBatteryIgnore" class="px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 text-[11px] font-bold border border-slate-200 dark:border-slate-700 shadow-xs pressable">
+            Ajustar
+          </button>
+        </div>
+      </div>
+
+      <!-- Notificação Permanente -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between">
+        <div class="space-y-0.5">
+          <div class="text-xs font-semibold text-slate-800 dark:text-slate-200">Notificação de status em segundo plano</div>
+          <div id="bgNotifyDesc" class="text-[11px] text-slate-500 dark:text-slate-400">✓ Notificação de status ativa enquanto o app roda em segundo plano.</div>
+        </div>
+        <button onclick="handleToggleBgNotify()" id="switchNotify" class="w-10 h-5 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shrink-0">
+          <div id="thumbNotify" class="w-4 h-4 rounded-full bg-white shadow-sm switch-thumb transform translate-x-5"></div>
+        </button>
+      </div>
+
+      <!-- Dica Fechar App -->
+      <div class="p-2.5 rounded-xl bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200/60 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 flex items-start gap-2">
+        <i class="fa-solid fa-lightbulb text-amber-500 mt-0.5 shrink-0"></i>
+        <span><strong>Dica:</strong> Fechar o app nas tarefas recentes <strong>NÃO</strong> interrompe o rastreamento em segundo plano. Use o botão liga/desliga no topo deste card para parar ou retomar quando quiser.</span>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 3: ARMAZENAMENTO & SINCRONIZAÇÃO (GOOGLE DRIVE / CSV)
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center font-bold">
+            <i class="fa-brands fa-google-drive text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">3. Armazenamento & sincronização</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Celular local-first + Cópia em nuvem adicional</p>
+          </div>
+        </div>
+        <button onclick="handleToggleDriveAuto()" id="switchDrive" class="w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner">
+          <div id="thumbDrive" class="w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6"></div>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-slate-800 space-y-2 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        <p>
+          Suas localizações são <strong>SEMPRE salvas primeiro no celular</strong> – nunca se perdem, mesmo sem internet ou com o Drive ocupado. O Google Drive é uma cópia de segurança em nuvem adicional:
+        </p>
+        <div class="space-y-1 pl-1 text-[11px]">
+          <div>• <strong>SINCRONIZAÇÃO CONTÍNUA (recomendado):</strong> celular + Google Drive, sincroniza após cada checagem. Se estiver offline, tenta novamente depois.</div>
+          <div>• <strong>APENAS LOCAL:</strong> mantém tudo no celular, sem nuvem (desative a chave acima).</div>
+        </div>
+      </div>
+
+      <!-- Sincronização Automática Padrão -->
+      <div id="driveInfoBox" class="bg-blue-50/50 dark:bg-blue-950/30 rounded-xl p-3 border border-blue-200/80 dark:border-blue-900/60 space-y-2 text-xs">
+        <div id="driveAutoStatusLabel" class="text-[11px] font-bold text-blue-900 dark:text-blue-300">
+          ✓ Sincronização automática PADRÃO ATIVA (pasta ‘TagTracker’ na sua conta Google).
+        </div>
+        <p class="text-[11px] text-slate-600 dark:text-slate-400">
+          PADRÃO: sincronização automática para a pasta ‘TagTracker’ na sua própria conta Google – sem precisar escolher arquivos, recuperada automaticamente ao entrar em outro aparelho.
+        </p>
+        <div id="driveSummaryText" class="pt-1.5 border-t border-blue-200/50 dark:border-blue-900/40 text-[11px] font-mono text-slate-700 dark:text-slate-300 space-y-0.5">
+          📁 lendo status do Drive…
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="handleSyncDriveNow()" id="btnSyncDrive" class="py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm pressable">
+          <i id="syncIcon" class="fa-solid fa-arrows-rotate text-xs"></i>
+          <span id="syncText">Sincronizar pasta padrão agora</span>
+        </button>
+        <button onclick="handleVerifyDrive()" class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/70 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs flex items-center justify-center gap-1.5 pressable">
+          <i class="fa-regular fa-folder-open text-xs"></i>
+          <span>Ver arquivos no Drive</span>
+        </button>
+      </div>
+
+      <!-- Backup em Arquivo Próprio CSV -->
+      <div class="pt-2 border-t border-slate-100 dark:border-slate-800/80 space-y-2">
+        <div class="text-[11px] font-bold text-slate-700 dark:text-slate-300">
+          — ou backup em arquivo próprio (usuários avançados) —
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+          Escolha um arquivo CSV no Drive ou armazenamento local para salvar uma cópia ou restaurar um histórico salvo.
+        </p>
+        <div class="grid grid-cols-2 gap-2">
+          <button onclick="handlePickDriveFile()" class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold pressable text-center">
+            Escolher arquivo no Drive
+          </button>
+          <button onclick="handlePickRestoreFile()" class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/60 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold pressable text-center">
+            Restaurar arquivo CSV
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 4: SUAS TAGS (GOOGLE FIND HUB)
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-tags text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">4. Suas tags</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Dispositivos registrados na rede Find Hub</p>
+          </div>
+        </div>
+        <span id="tagsCountBadge" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300">
+          Ativo
+        </span>
+      </div>
+
+      <p class="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+        Atualize a lista para buscar novas tags adicionadas à sua conta Google, ou execute uma checagem imediata fora do intervalo programado.
+      </p>
+
+      <div class="grid grid-cols-2 gap-2 pt-1">
+        <button onclick="handleRefreshTags()" class="py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700/70 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-semibold text-xs flex items-center justify-center gap-1.5 pressable">
+          <i class="fa-solid fa-arrows-rotate text-xs"></i>
+          <span>Atualizar lista de tags</span>
+        </button>
+        <button onclick="handleCheckLocationsNow()" class="py-2 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 pressable shadow-sm">
+          <i class="fa-solid fa-location-crosshairs text-xs"></i>
+          <span>Verificar localizações agora</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 5: ALERTAS DE FURTO / SENTINELA (PARK GUARD)
+         ===================================================================== -->
+    <section class="bg-gradient-to-r from-amber-500/10 via-amber-500/5 to-transparent dark:from-amber-950/30 dark:via-amber-950/10 dark:to-transparent bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-amber-200/80 dark:border-amber-800/60 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-shield-halved text-sm"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h2 class="text-sm font-bold text-slate-900 dark:text-white">5. Alertas de furto / sentinela</h2>
+              <span class="px-1.5 py-0.2 rounded bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[9px] font-extrabold uppercase">Park Guard</span>
+            </div>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Vigilância de movimento e cerca virtual</p>
+          </div>
+        </div>
+        <button onclick="handleToggleSentinel()" id="switchSentinel" class="w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner">
+          <div id="thumbSentinel" class="w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6"></div>
+        </button>
+      </div>
+
+      <p class="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        Ative quando o veículo ou objeto estiver estacionado. Se a tag se <strong>MOVER mais de ~150 m</strong>, você receberá um <strong>alerta SONORO ALTO</strong> com link para o Maps – para que possa agir rápido.
+      </p>
+
+      <div class="p-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/80 dark:border-amber-900/60 text-[11px] text-amber-900 dark:text-amber-300 leading-normal flex items-start gap-2">
+        <i class="fa-solid fa-hand-holding-hand text-amber-600 mt-0.5 shrink-0"></i>
+        <span><strong>Dica de segurança:</strong> em caso de furto, forneça a localização à polícia; <strong>não confronte ninguém sozinho</strong>.</span>
+      </div>
+
+      <div class="flex items-center justify-between text-xs pt-1 border-t border-amber-100 dark:border-amber-900/40 text-slate-500 dark:text-slate-400">
+        <span class="flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-dot text-emerald-500 text-[10px]"></i>
+          <span id="sentinelStatusLabel">✓ Modo sentinela ATIVADO – você será alertado se uma tag se mover.</span>
+        </span>
+        <span class="font-bold text-slate-700 dark:text-slate-300 shrink-0">Raio: ~150m</span>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 6: BLOQUEIO DO APLICATIVO (APENAS NESTE APARELHO)
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-lock text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">6. Bloqueio do aplicativo</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Proteção exclusiva apenas neste aparelho</p>
+          </div>
+        </div>
+        <button onclick="handleToggleAppLock()" id="switchApplock" class="w-12 h-6 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shadow-inner">
+          <div id="thumbApplock" class="w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-0"></div>
+        </button>
+      </div>
+
+      <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-1.5">
+        <p>
+          Proteja o app com uma senha para que ninguém abra seu rastreador. A senha e a dica ficam salvas <strong>APENAS neste aparelho</strong> – nunca enviadas ao Google ou Drive, portanto não podem ser recuperadas de outro lugar.
+        </p>
+        <div class="text-[11px] text-rose-600 dark:text-rose-400 font-semibold flex items-center gap-1">
+          <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
+          <span>Se esquecer e a dica não ajudar, será necessário reinstalar o app.</span>
+        </div>
+      </div>
+
+      <div id="applockSettingsBox" class="hidden space-y-2 pt-1 border-t border-slate-100 dark:border-slate-800">
+        <div class="flex items-center justify-between text-xs text-slate-600 dark:text-slate-400">
+          <span>Status da proteção:</span>
+          <span class="font-bold text-emerald-600 dark:text-emerald-400">✓ Bloqueio do app ATIVADO.</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openModal('modalAppPassword')" class="flex-1 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold pressable">
+            Alterar senha do aplicativo
+          </button>
+          <button onclick="handleRemoveAppLock()" class="py-2 px-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold pressable">
+            Remover senha
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 7: LICENÇA PRO (LIMITES E CONTATO)
+         ===================================================================== -->
+    <section id="proLicenseCard" class="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-2xl p-4 text-white shadow-md space-y-3 relative overflow-hidden">
+      <div class="absolute -right-4 -bottom-4 w-28 h-28 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+      
+      <div class="flex items-center justify-between relative z-10">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-md flex items-center justify-center font-extrabold text-white text-base">
+            <i class="fa-solid fa-crown"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h2 id="licenseTitle" class="text-sm font-black tracking-tight">7. Tag Tracker Pro</h2>
+              <span id="licenseBadge" class="px-2 py-0.2 rounded-full bg-white/25 text-[10px] font-extrabold uppercase tracking-wider">Ativo</span>
+            </div>
+            <p id="licenseSubtitle" class="text-[11px] text-amber-100">Tags ilimitadas · Histórico perpétuo · Alertas</p>
+          </div>
+        </div>
+        <button onclick="openModal('modalLicense')" class="px-3 py-1.5 rounded-full bg-white text-amber-700 hover:bg-amber-50 text-xs font-extrabold shadow-sm pressable">
+          Gerenciar
+        </button>
+      </div>
+
+      <div class="bg-black/20 backdrop-blur-md rounded-xl p-3 text-xs leading-relaxed space-y-1.5 relative z-10">
+        <p>
+          A versão gratuita permite rastrear <strong>1 tag</strong> com histórico das <strong>últimas 24 horas</strong>. A chave Pro (vinculada ao seu ID de Dispositivo) desbloqueia:
+        </p>
+        <div class="grid grid-cols-2 gap-1 text-[11px] font-semibold text-amber-100">
+          <div>✓ Múltiplas tags simultâneas</div>
+          <div>✓ Histórico perpétuo completo</div>
+          <div>✓ Alertas de movimento sentinela</div>
+          <div>✓ Exportação CSV e relatórios</div>
+        </div>
+        <div class="text-[10px] text-amber-200/90 pt-1 border-t border-white/20">
+          Este app é de código aberto (GPL-3.0) — a chave é uma taxa de conveniência/apoio ao projeto.
+        </div>
+      </div>
+
+      <!-- ID do Dispositivo com Cópia -->
+      <div class="bg-black/25 backdrop-blur-md rounded-xl p-2.5 flex items-center justify-between text-xs relative z-10">
+        <div class="truncate mr-2">
+          <div class="text-[10px] text-amber-200 uppercase font-bold tracking-wider">ID deste dispositivo (envie para receber a chave):</div>
+          <div class="font-mono font-bold text-white tracking-wider text-xs" id="deviceIdText">---</div>
+        </div>
+        <button onclick="handleCopyDeviceId()" class="px-2.5 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white font-bold text-xs flex items-center gap-1.5 pressable shrink-0">
+          <i class="fa-regular fa-copy"></i>
+          <span>Copiar</span>
+        </button>
+      </div>
+
+      <!-- Solicitar por Email / WhatsApp -->
+      <div class="grid grid-cols-2 gap-2 pt-1 relative z-10">
+        <button onclick="handleRequestProEmail()" class="py-2 px-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 pressable">
+          <i class="fa-regular fa-envelope"></i>
+          <span>Solicitar por E-mail</span>
+        </button>
+        <button onclick="handleRequestProShare()" class="py-2 px-2.5 rounded-xl bg-white/20 hover:bg-white/30 text-white text-[11px] font-bold flex items-center justify-center gap-1.5 pressable">
+          <i class="fa-brands fa-whatsapp text-emerald-300"></i>
+          <span>Solicitar via WhatsApp</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 8: LEGAL & PRIVACIDADE
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-xl bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center font-bold">
+          <i class="fa-solid fa-scale-balanced text-sm"></i>
+        </div>
+        <div>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">8. Legal & privacidade</h2>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Transparência e privacidade por padrão</p>
+        </div>
+      </div>
+
+      <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+        <p>
+          <strong>Não afiliado ao Google.</strong> Este app usa um método <strong>NÃO OFICIAL</strong> para ler a rede Find Hub – o Google pode bloquear a qualquer momento.
+        </p>
+        <div class="p-2 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200/60 dark:border-amber-900/40 text-[11px] text-amber-900 dark:text-amber-300">
+          ⚠️ <strong>Apenas para rastreamento de BENS PRÓPRIOS</strong>, nunca uma pessoa sem consentimento.
+        </div>
+        <p class="text-[11px]">
+          Seus dados ficam no seu aparelho e no seu Google Drive; nada é enviado ao desenvolvedor. Código aberto (GPL-3.0), construído sobre o GoogleFindMyTools.
+        </p>
+      </div>
+
+      <div class="space-y-1.5 text-xs">
+        <button onclick="openModal('modalLegalTerms')" class="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-between font-bold pressable border border-slate-200/60 dark:border-slate-800">
+          <span class="flex items-center gap-2">
+            <i class="fa-solid fa-file-contract text-slate-400"></i>
+            <span>Ler termo completo & privacidade</span>
+          </span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </button>
+        
+        <button onclick="handleOpenHelp()" class="w-full py-2.5 px-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-between font-bold pressable border border-slate-200/60 dark:border-slate-800">
+          <span class="flex items-center gap-2">
+            <i class="fa-regular fa-circle-question text-slate-400"></i>
+            <span>Como funciona (guia detalhado)</span>
+          </span>
+          <i class="fa-solid fa-chevron-right text-[10px] text-slate-400"></i>
+        </button>
+      </div>
+
+      <div class="text-center pt-2 text-[11px] text-slate-400">
+        Tag Tracker v3.23.1 · Código Aberto GPL-3.0 · Contato: jamesonabade@gmail.com
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BARRA INFERIOR FIXA COM BOTÃO "ABRIR MAPA" -->
+  <footer class="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 pt-3 sticky bottom-0 z-30" style="padding-bottom: max(28px, calc(env(safe-area-inset-bottom) + 16px));">
+    <div class="max-w-xl mx-auto w-full">
+      <button onclick="handleOpenMap()" class="w-full py-3 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md pressable">
+        <i class="fa-solid fa-map-location-dot"></i>
+        <span>Abrir mapa</span>
+      </button>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       MODAIS INTERATIVOS
+       ========================================================================= -->
+
+  <!-- Modal: Arquivos no Drive -->
+  <div id="modalDriveFiles" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-blue-600 dark:text-blue-400">
+          <i class="fa-brands fa-google-drive text-lg"></i>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">Arquivos no Google Drive</h3>
+        </div>
+        <button onclick="closeModal('modalDriveFiles')" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center pressable">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div id="modalDriveFilesBody" class="space-y-2 max-h-56 overflow-y-auto no-scrollbar text-xs">
+        <div class="text-center text-slate-400 py-4">Verificando arquivos…</div>
+      </div>
+      <button onclick="closeModal('modalDriveFiles')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold pressable">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Licença Pro -->
+  <div id="modalLicense" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-amber-500">
+          <i class="fa-solid fa-crown text-base"></i>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">Insira sua chave Pro</h3>
+        </div>
+        <button onclick="closeModal('modalLicense')" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center pressable">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-500 dark:text-slate-400">
+        Envie seu ID do Dispositivo. Você receberá uma chave – cole-a abaixo para desbloquear este aparelho.
+      </p>
+      <div class="space-y-1">
+        <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Chave de Licença:</label>
+        <input type="text" id="licenseKeyInput" placeholder="Cole a chave de licença" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-mono text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500">
+      </div>
+      <div class="flex gap-2">
+        <button onclick="handleActivateProKey()" class="flex-1 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold pressable">
+          Desbloquear Pro
+        </button>
+        <button onclick="handleRemoveProKey()" class="py-2.5 px-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold pressable">
+          Remover
+        </button>
+      </div>
+      <button onclick="closeModal('modalLicense')" class="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold pressable">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal: Senha do Aplicativo -->
+  <div id="modalAppPassword" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2 text-purple-600 dark:text-purple-400">
+          <i class="fa-solid fa-shield-halved text-base"></i>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">Definir senha do aplicativo</h3>
+        </div>
+        <button onclick="closeModal('modalAppPassword')" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center pressable">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Nova senha (mínimo 4 dígitos):</label>
+          <input type="password" id="appLockInput" placeholder="••••" maxlength="12" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm tracking-widest text-center text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Dica de recuperação:</label>
+          <input type="text" id="appLockHint" placeholder="Ex: Ano da formatura" class="w-full p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-900 dark:text-white focus:outline-none">
+        </div>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="handleSaveAppLock()" class="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold pressable">
+          Salvar
+        </button>
+        <button onclick="closeModal('modalAppPassword')" class="py-2.5 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold pressable">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Termos Legais -->
+  <div id="modalLegalTerms" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-3xl max-w-sm w-full p-5 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white">Legal & privacidade</h3>
+        <button onclick="closeModal('modalLegalTerms')" class="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center pressable">
+          <i class="fa-solid fa-xmark text-xs"></i>
+        </button>
+      </div>
+      <div class="max-h-64 overflow-y-auto no-scrollbar text-xs text-slate-600 dark:text-slate-300 space-y-2 leading-relaxed">
+        <p>Não afiliado ao Google. Este app usa um método NÃO OFICIAL para ler a rede Find Hub – o Google pode bloquear a qualquer momento.</p>
+        <p>Apenas para rastreamento de BENS PRÓPRIOS, nunca uma pessoa sem consentimento. Seus dados ficam no seu aparelho e no seu Google Drive; nada é enviado ao desenvolvedor.</p>
+        <p>Código aberto (GPL-3.0), construído sobre o GoogleFindMyTools.</p>
+      </div>
+      <button onclick="closeModal('modalLegalTerms')" class="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold pressable">
+        Fechar
+      </button>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900/95 dark:bg-white/95 text-white dark:text-slate-900 px-4 py-2.5 rounded-2xl shadow-xl text-xs font-bold flex items-center gap-2 transform translate-y-20 opacity-0 transition-all duration-300 pointer-events-none">
+    <i class="fa-solid fa-circle-info text-emerald-400 dark:text-emerald-600"></i>
+    <span id="toastMsg">Mensagem</span>
+  </div>
+
+  <!-- SCRIPT DE INTEGRAÇÃO COM ANDROID BRIDGE -->
+  <script>
+    const isNative = typeof window.SettingsBridge !== 'undefined';
+
+    // Estado da tela
+    let currentState = {
+      signedIn: false,
+      unlocked: false,
+      email: '',
+      interval: 15,
+      bgNotify: true,
+      paused: false,
+      isIgnoringBattery: true,
+      autoDrive: false,
+      driveSummary: '',
+      guard: false,
+      hasAppLock: false,
+      deviceId: '',
+      pro: false,
+      error: null
+    };
+
+    function updateState(jsonStr) {
+      try {
+        const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
+        currentState = Object.assign({}, currentState, data);
+        render();
+      } catch (e) {
+        console.error("Erro ao atualizar estado:", e);
+      }
+    }
+
+    function render() {
+      // 1. Hero & Conta
+      const heroTitle = document.getElementById('heroStatusTitle');
+      const heroSubtitle = document.getElementById('heroStatusSubtitle');
+      const heroBadge = document.getElementById('heroStatusBadge');
+      const heroIcon = document.getElementById('heroStatusIcon');
+      const heroIconBg = document.getElementById('heroStatusIconBg');
+      const warningBanner = document.getElementById('warningBanner');
+      const accountStatusPill = document.getElementById('accountStatusPill');
+      const accountConnectedBox = document.getElementById('accountConnectedBox');
+      const btnGuidedConnect = document.getElementById('btnGuidedConnect');
+      const userEmailDisplay = document.getElementById('userEmailDisplay');
+      const userAvatarText = document.getElementById('userAvatarText');
+
+      const pillAuth = document.getElementById('stepPillAuth');
+      const pillAuthIcon = document.getElementById('stepPillAuthIcon');
+      const pillAuthDesc = document.getElementById('stepPillAuthDesc');
+
+      const pillKeys = document.getElementById('stepPillKeys');
+      const pillKeysIcon = document.getElementById('stepPillKeysIcon');
+      const pillKeysDesc = document.getElementById('stepPillKeysDesc');
+
+      const pillBg = document.getElementById('stepPillBg');
+      const pillBgDesc = document.getElementById('stepPillBgDesc');
+
+      if (currentState.signedIn && currentState.unlocked) {
+        heroTitle.innerText = "Sistema Pronto e Ativo";
+        heroSubtitle.innerText = "Tags sincronizadas · Verificação a cada " + currentState.interval + "m";
+        heroBadge.innerText = "Operacional";
+        heroBadge.className = "px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold uppercase tracking-wider border border-emerald-400/30";
+        heroIcon.className = "fa-solid fa-shield-halved";
+        heroIconBg.className = "w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 text-lg";
+        warningBanner.classList.add('hidden');
+
+        accountStatusPill.innerText = "Conectado";
+        accountStatusPill.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800";
+        accountConnectedBox.classList.remove('hidden');
+        userEmailDisplay.innerText = currentState.email || "Conectado";
+        userAvatarText.innerText = (currentState.email ? currentState.email.charAt(0).toUpperCase() : "G");
+        btnGuidedConnect.classList.add('hidden');
+
+        pillAuth.className = "bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-2 flex flex-col items-center text-center";
+        pillAuthIcon.className = "fa-solid fa-circle-check text-emerald-400";
+        pillAuthDesc.innerText = "Conectado";
+
+        pillKeys.className = "bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-2 flex flex-col items-center text-center";
+        pillKeysIcon.className = "fa-solid fa-key text-emerald-400";
+        pillKeysDesc.innerText = "Desbloqueado";
+
+      } else if (currentState.signedIn && !currentState.unlocked) {
+        heroTitle.innerText = "Atenção: Chaves Pendentes";
+        heroSubtitle.innerText = "Mapa vazio até autorizar as chaves de descriptografia";
+        heroBadge.innerText = "Ação Necessária";
+        heroBadge.className = "px-2 py-0.5 rounded-full bg-amber-500/30 text-amber-300 text-[10px] font-extrabold uppercase tracking-wider border border-amber-400/40";
+        heroIcon.className = "fa-solid fa-key";
+        heroIconBg.className = "w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400 text-lg";
+        warningBanner.classList.remove('hidden');
+
+        accountStatusPill.innerText = "Chaves Pendentes";
+        accountStatusPill.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 border border-amber-300 dark:border-amber-800";
+        accountConnectedBox.classList.remove('hidden');
+        userEmailDisplay.innerText = currentState.email || "Conectado";
+        userAvatarText.innerText = (currentState.email ? currentState.email.charAt(0).toUpperCase() : "G");
+        btnGuidedConnect.classList.remove('hidden');
+        document.getElementById('btnGuidedConnectText').innerText = "🔑 Desbloquear chaves de criptografia (Etapa 2)";
+
+        pillAuth.className = "bg-emerald-950/40 border border-emerald-500/40 rounded-xl p-2 flex flex-col items-center text-center";
+        pillAuthIcon.className = "fa-solid fa-circle-check text-emerald-400";
+        pillAuthDesc.innerText = "Conectado";
+
+        pillKeys.className = "bg-amber-950/60 border border-amber-500/50 rounded-xl p-2 flex flex-col items-center text-center";
+        pillKeysIcon.className = "fa-solid fa-triangle-exclamation text-amber-400";
+        pillKeysDesc.innerText = "Desbloquear";
+
+      } else {
+        heroTitle.innerText = "Configurar o Tag Tracker";
+        heroSubtitle.innerText = "Conecte sua conta Google para salvar o histórico";
+        heroBadge.innerText = "Pendente";
+        heroBadge.className = "px-2 py-0.5 rounded-full bg-slate-500/30 text-slate-300 text-[10px] font-extrabold uppercase tracking-wider border border-slate-400/40";
+        heroIcon.className = "fa-solid fa-user-plus";
+        heroIconBg.className = "w-10 h-10 rounded-xl bg-slate-500/20 border border-slate-400/40 flex items-center justify-center text-slate-300 text-lg";
+        warningBanner.classList.add('hidden');
+
+        accountStatusPill.innerText = "Não Conectado";
+        accountStatusPill.className = "px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-300 dark:border-slate-600";
+        accountConnectedBox.classList.add('hidden');
+        btnGuidedConnect.classList.remove('hidden');
+        document.getElementById('btnGuidedConnectText').innerText = "🔗 Conectar conta Google (guiado)";
+
+        pillAuth.className = "bg-slate-900/40 border border-slate-700 rounded-xl p-2 flex flex-col items-center text-center";
+        pillAuthIcon.className = "fa-regular fa-circle text-slate-400";
+        pillAuthDesc.innerText = "Não iniciado";
+
+        pillKeys.className = "bg-slate-900/40 border border-slate-700 rounded-xl p-2 flex flex-col items-center text-center";
+        pillKeysIcon.className = "fa-regular fa-circle text-slate-400";
+        pillKeysDesc.innerText = "Bloqueado";
+      }
+
+      // 2. Rastreamento
+      const track = document.getElementById('switchTracking');
+      const thumb = document.getElementById('thumbTracking');
+      if (!currentState.paused) {
+        track.className = "w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumb.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6";
+        pillBgDesc.innerText = "Ativo (" + (currentState.interval >= 60 ? (currentState.interval/60) + "h" : currentState.interval + "m") + ")";
+      } else {
+        track.className = "w-12 h-6 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumb.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-0";
+        pillBgDesc.innerText = "Pausado";
+      }
+
+      // Interval chips
+      const chips = [15, 30, 60, 120, 240];
+      chips.forEach(m => {
+        const el = document.getElementById('chip' + m);
+        if (el) {
+          if (m === currentState.interval) {
+            el.className = "py-1.5 rounded-lg bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm pressable transition-all";
+          } else {
+            el.className = "py-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 pressable transition-all";
+          }
+        }
+      });
+      document.getElementById('intervalBadge').innerText = "Atualmente a cada " + currentState.interval + " minutos.";
+
+      // Bateria
+      const bText = document.getElementById('batteryIgnoreText');
+      if (currentState.isIgnoringBattery) {
+        bText.innerText = "✓ Execução irrestrita em segundo plano permitida.";
+        bText.className = "text-emerald-600 dark:text-emerald-400 text-xs font-bold";
+      } else {
+        bText.innerText = "Restrições de bateria ativas (verificações podem ser atrasadas).";
+        bText.className = "text-amber-600 dark:text-amber-400 text-xs font-bold";
+      }
+
+      // Notificação Silenciosa
+      const trackN = document.getElementById('switchNotify');
+      const thumbN = document.getElementById('thumbNotify');
+      const descN = document.getElementById('bgNotifyDesc');
+      if (currentState.bgNotify) {
+        trackN.className = "w-10 h-5 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shrink-0";
+        thumbN.className = "w-4 h-4 rounded-full bg-white shadow-sm switch-thumb transform translate-x-5";
+        descN.innerText = "✓ Notificação de status ativa enquanto o app roda em segundo plano.";
+      } else {
+        trackN.className = "w-10 h-5 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shrink-0";
+        thumbN.className = "w-4 h-4 rounded-full bg-white shadow-sm switch-thumb transform translate-x-0";
+        descN.innerText = "Notificação de status em segundo plano desativada.";
+      }
+
+      // 3. Drive
+      const trackD = document.getElementById('switchDrive');
+      const thumbD = document.getElementById('thumbDrive');
+      const infoD = document.getElementById('driveInfoBox');
+      const labelD = document.getElementById('driveAutoStatusLabel');
+      if (currentState.autoDrive) {
+        trackD.className = "w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumbD.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6";
+        infoD.classList.remove('opacity-50');
+        labelD.innerText = "✓ Sincronização automática PADRÃO ATIVA (pasta ‘TagTracker’ na sua conta Google).";
+      } else {
+        trackD.className = "w-12 h-6 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumbD.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-0";
+        infoD.classList.add('opacity-50');
+        labelD.innerText = "Sincronização com o Google Drive desativada (Apenas local).";
+      }
+      if (currentState.driveSummary) {
+        document.getElementById('driveSummaryText').innerText = currentState.driveSummary;
+      }
+
+      // 4. Sentinela
+      const trackS = document.getElementById('switchSentinel');
+      const thumbS = document.getElementById('thumbSentinel');
+      const labelS = document.getElementById('sentinelStatusLabel');
+      if (currentState.guard) {
+        trackS.className = "w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumbS.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6";
+        labelS.innerText = "✓ Modo sentinela ATIVADO – você será alertado se uma tag se mover.";
+      } else {
+        trackS.className = "w-12 h-6 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumbS.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-0";
+        labelS.innerText = "Modo sentinela desativado.";
+      }
+
+      // 5. Bloqueio App
+      const trackL = document.getElementById('switchApplock');
+      const thumbL = document.getElementById('thumbApplock');
+      const boxL = document.getElementById('applockSettingsBox');
+      if (currentState.hasAppLock) {
+        trackL.className = "w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumbL.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6";
+        boxL.classList.remove('hidden');
+      } else {
+        trackL.className = "w-12 h-6 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shadow-inner";
+        thumbL.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-0";
+        boxL.classList.add('hidden');
+      }
+
+      // 6. Licença Pro
+      const licCard = document.getElementById('proLicenseCard');
+      const licTitle = document.getElementById('licenseTitle');
+      const licSubtitle = document.getElementById('licenseSubtitle');
+      const licBadge = document.getElementById('licenseBadge');
+      if (currentState.pro) {
+        licCard.className = "bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 rounded-2xl p-4 text-white shadow-md space-y-3 relative overflow-hidden";
+        licTitle.innerText = "7. Tag Tracker Pro";
+        licSubtitle.innerText = "Tags ilimitadas · Histórico perpétuo · Alertas";
+        licBadge.innerText = "Ativo";
+      } else {
+        licCard.className = "bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900 rounded-2xl p-4 text-white shadow-md space-y-3 relative overflow-hidden";
+        licTitle.innerText = "7. Versão Gratuita";
+        licSubtitle.innerText = "Limite de 1 tag · Histórico de 24h";
+        licBadge.innerText = "Free Tier";
+      }
+      document.getElementById('deviceIdText').innerText = currentState.deviceId || "---";
+    }
+
+    // Ações Conectadas ao Bridge Nativo
+    function handleGoBack() {
+      if (isNative && window.SettingsBridge.goBack) window.SettingsBridge.goBack();
+      else history.back();
+    }
+
+    function handleOpenMap() {
+      if (isNative && window.SettingsBridge.openMap) window.SettingsBridge.openMap();
+      else location.href = "/";
+    }
+
+    function handleOpenHelp() {
+      if (isNative && window.SettingsBridge.openHelp) window.SettingsBridge.openHelp();
+      else location.href = "/help";
+    }
+
+    function handleGuidedLogin() {
+      if (isNative && window.SettingsBridge.startGuidedLogin) window.SettingsBridge.startGuidedLogin();
+      else showToast('Iniciando fluxo guiado no Android...');
+    }
+
+    function handleSignInGoogle() {
+      if (isNative && window.SettingsBridge.startSignIn) window.SettingsBridge.startSignIn();
+      else showToast('Iniciando login do Google...');
+    }
+
+    function handleUnlockKeys() {
+      if (isNative && window.SettingsBridge.startUnlockKeys) window.SettingsBridge.startUnlockKeys();
+      else showToast('Solicitando confirmação do bloqueio de tela...');
+    }
+
+    function handleImportSecrets() {
+      if (isNative && window.SettingsBridge.importSecrets) window.SettingsBridge.importSecrets();
+      else showToast('Abrindo seletor para google_secrets.json...');
+    }
+
+    function handleToggleTracking() {
+      const next = !currentState.paused;
+      if (isNative && window.SettingsBridge.setTrackingPaused) {
+        window.SettingsBridge.setTrackingPaused(next);
+      } else {
+        currentState.paused = next;
+        render();
+        showToast(next ? 'Rastreamento pausado' : 'Rastreamento retomado');
+      }
+    }
+
+    function handleSetInterval(m) {
+      if (isNative && window.SettingsBridge.setInterval) {
+        window.SettingsBridge.setInterval(m);
+      } else {
+        currentState.interval = m;
+        render();
+        showToast('Intervalo ajustado para ' + m + ' min');
+      }
+    }
+
+    function handleOpenBatteryActivity() {
+      if (isNative && window.SettingsBridge.openBatteryActivity) window.SettingsBridge.openBatteryActivity();
+      else showToast('Abrindo tela Bateria & Atividade...');
+    }
+
+    function handleRequestIgnoreBattery() {
+      if (isNative && window.SettingsBridge.requestIgnoreBattery) window.SettingsBridge.requestIgnoreBattery();
+      else showToast('Abrindo ajustes de bateria...');
+    }
+
+    function handleToggleBgNotify() {
+      const next = !currentState.bgNotify;
+      if (isNative && window.SettingsBridge.setBgNotify) {
+        window.SettingsBridge.setBgNotify(next);
+      } else {
+        currentState.bgNotify = next;
+        render();
+        showToast(next ? 'Notificação ativa' : 'Notificação desativada');
+      }
+    }
+
+    function handleToggleDriveAuto() {
+      const next = !currentState.autoDrive;
+      if (isNative && window.SettingsBridge.setDriveAuto) {
+        window.SettingsBridge.setDriveAuto(next);
+      } else {
+        currentState.autoDrive = next;
+        render();
+        showToast(next ? 'Drive automático ativado' : 'Drive desativado');
+      }
+    }
+
+    function handleSyncDriveNow() {
+      const icon = document.getElementById('syncIcon');
+      icon.classList.add('spinning');
+      if (isNative && window.SettingsBridge.syncDriveNow) {
+        window.SettingsBridge.syncDriveNow();
+      } else {
+        setTimeout(() => {
+          icon.classList.remove('spinning');
+          showToast('Sincronizado com o Drive!');
+        }, 1200);
+      }
+    }
+
+    function handleVerifyDrive() {
+      if (isNative && window.SettingsBridge.verifyDrive) {
+        window.SettingsBridge.verifyDrive();
+      } else {
+        openModal('modalDriveFiles');
+      }
+    }
+
+    function handlePickDriveFile() {
+      if (isNative && window.SettingsBridge.pickDriveFile) window.SettingsBridge.pickDriveFile();
+      else showToast('Abrindo seletor de arquivo no Drive...');
+    }
+
+    function handlePickRestoreFile() {
+      if (isNative && window.SettingsBridge.pickRestoreFile) window.SettingsBridge.pickRestoreFile();
+      else showToast('Abrindo seletor para restaurar CSV...');
+    }
+
+    function handleRefreshTags() {
+      if (isNative && window.SettingsBridge.refreshTags) window.SettingsBridge.refreshTags();
+      else showToast('Atualizando lista de tags do Google...');
+    }
+
+    function handleCheckLocationsNow() {
+      if (isNative && window.SettingsBridge.checkLocationsNow) window.SettingsBridge.checkLocationsNow();
+      else showToast('Verificando localizações agora...');
+    }
+
+    function handleToggleSentinel() {
+      const next = !currentState.guard;
+      if (isNative && window.SettingsBridge.setSentinel) {
+        window.SettingsBridge.setSentinel(next);
+      } else {
+        currentState.guard = next;
+        render();
+        showToast(next ? 'Sentinela ATIVADO' : 'Sentinela desativado');
+      }
+    }
+
+    function handleToggleAppLock() {
+      if (!currentState.hasAppLock) {
+        openModal('modalAppPassword');
+      } else {
+        handleRemoveAppLock();
+      }
+    }
+
+    function handleSaveAppLock() {
+      const pw = document.getElementById('appLockInput').value;
+      const hint = document.getElementById('appLockHint').value;
+      if (!pw || pw.length < 4) {
+        showToast('A senha deve ter no mínimo 4 dígitos');
+        return;
+      }
+      closeModal('modalAppPassword');
+      if (isNative && window.SettingsBridge.setAppLock) {
+        window.SettingsBridge.setAppLock(pw, hint);
+      } else {
+        currentState.hasAppLock = true;
+        render();
+        showToast('✓ Bloqueio por senha ativado');
+      }
+    }
+
+    function handleRemoveAppLock() {
+      if (isNative && window.SettingsBridge.removeAppLock) {
+        window.SettingsBridge.removeAppLock();
+      } else {
+        currentState.hasAppLock = false;
+        render();
+        showToast('Bloqueio por senha removido');
+      }
+    }
+
+    function handleCopyDeviceId() {
+      const id = document.getElementById('deviceIdText').innerText;
+      if (isNative && window.SettingsBridge.copyDeviceId) {
+        window.SettingsBridge.copyDeviceId(id);
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(id);
+        showToast('✓ Device ID copiado: ' + id);
+      }
+    }
+
+    function handleRequestProEmail() {
+      if (isNative && window.SettingsBridge.requestProEmail) window.SettingsBridge.requestProEmail();
+      else showToast('Solicitando por e-mail...');
+    }
+
+    function handleRequestProShare() {
+      if (isNative && window.SettingsBridge.requestProShare) window.SettingsBridge.requestProShare();
+      else showToast('Compartilhando ID via WhatsApp...');
+    }
+
+    function handleActivateProKey() {
+      const key = document.getElementById('licenseKeyInput').value;
+      if (!key) {
+        showToast('Cole sua chave primeiro');
+        return;
+      }
+      closeModal('modalLicense');
+      if (isNative && window.SettingsBridge.activateProKey) {
+        window.SettingsBridge.activateProKey(key);
+      } else {
+        currentState.pro = true;
+        render();
+        showToast('Pro ativado com sucesso – obrigado!');
+      }
+    }
+
+    function handleRemoveProKey() {
+      closeModal('modalLicense');
+      if (isNative && window.SettingsBridge.removeProKey) {
+        window.SettingsBridge.removeProKey();
+      } else {
+        currentState.pro = false;
+        render();
+        showToast('Licença removida');
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    let toastTimer = null;
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+        toast.classList.remove('translate-y-0', 'opacity-100');
+      }, 2400);
+    }
+
+    // Inicialização
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.documentElement.classList.add('dark');
+      }
+      if (isNative && window.SettingsBridge.requestInitialState) {
+        window.SettingsBridge.requestInitialState();
+      } else {
+        render();
+      }
+    });
+  </script>
+</body>
+</html>

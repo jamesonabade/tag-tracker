@@ -38,6 +38,74 @@ O Google não oferece uma API pública para o Find Hub. O servidor utiliza o pro
 - A integração utiliza uma API não oficial; portanto, uma mudança do Google pode interromper o funcionamento temporariamente. Caso isso aconteça, atualize o commit fixado do `GoogleFindMyTools` em `setup.ps1`, `setup.sh` e `Dockerfile`.
 - Não configure um intervalo de consulta curto demais. Uma verificação a cada **10 minutos** (valor padrão) é razoável.
 
+## Interface Principal e Significado dos Pontos
+
+A interface principal (tanto no navegador quanto no aplicativo Android) oferece visualização em mapa em tempo real, painel inferior expansível e controle do histórico de viagens.
+
+### Significado dos Pontos e Marcadores no Mapa
+
+O mapa diferencia a origem e o momento de cada localização registrada para oferecer leitura clara sem aglomeração de ícones:
+
+| Ponto no Mapa | Aparência | Descrição e Significado |
+|---|---|---|
+| **Mais recente** | Balão flutuante animado com ponto pulsante (`[ • Mais recente ]`), ícone da tag e círculo de precisão em metros | Representa a **última localização conhecida** registrada da tag. O círculo translúcido ao redor indica a margem de precisão estimada do GPS. |
+| **Info dispositivo** *(Dentro do raio)* | Círculo azul pequeno e discreto (`#0284c7`), estático e com borda branca | Localizações reportadas pelo **seu próprio celular/dispositivo proprietário** que ocorreram muito próximas da posição atual (dentro da margem de precisão). Mantém a área limpa e sem poluição visual. |
+| **Info dispositivo** *(Fora do raio)* | Alfinete com balão e badge azul destacado `Info dispositivo` | Registros feitos pelo **seu próprio dispositivo** em pontos mais afastados da localização atual (como paradas anteriores de um percurso ou trajetos de dias anteriores). |
+| **Rede Find Hub** | Círculo pequeno e discreto em tom ardósia (`#64748b`) com borda branca | Localizações capturadas de forma **anônima e colaborativa por outros aparelhos Android** que cruzaram com a tag na rua ou em trânsito. Permite ver toda a abrangência de apoio da rede global do Google. |
+| **Traçado da Rota** | Linha contínua colorida (`polyline`) conectando os pontos | Exibe o percurso histórico cronológico da tag. O traçado é **dinâmico** e conecta exclusivamente os pontos que estiverem ativos nos filtros de visualização. |
+
+---
+
+### Botões e Controles da Interface
+
+#### 1. Barra Superior (Header)
+- **Status do Servidor / Poller**: Indica em tempo real se a verificação periódica de localizações está ativa, em execução ou em espera.
+- **Seletor de Idioma (`PT` / `EN`)**: Alterna instantaneamente o idioma da interface entre Português e Inglês.
+- **Backup no Google Drive (`Drive on` / `Drive off`)**: Exibe o status da sincronização com o Google Drive (ativo, pendente, pronto ou erro) e há quanto tempo o último arquivo foi gravado.
+- **Obter Pro**: Atalho disponível na versão gratuita para gerenciar ou ativar a licença com recursos estendidos.
+- **Configurações / Sair (Engrenagem / Porta)**:
+  - No **aplicativo Android**: Abre a tela nativa de **Configurações** (bloqueio por senha/biometria, modo Sentinela, frequência de verificação em segundo plano, backup no Drive e gerenciamento de licença).
+  - Na **versão Web**: Encerra a sessão atual e retorna à tela de login.
+
+#### 2. Carrossel Horizontal de Tags (`tag-carousel`)
+- Localizado logo acima do painel de controle, exibe todos os seus rastreadores com seus respectivos ícones (bicicleta, moto, carro, chaves, mochila, celular) e o tempo decorrido desde o último registro.
+- **Navegação rápida**: Toque ou clique em qualquer tag para centrar o mapa nela e carregar seu histórico completo.
+- **Arrasto no Desktop (Click & Drag)**: Na versão web, você pode **clicar e arrastar com o mouse** para rolar horizontalmente a lista de dispositivos com facilidade, ou usar a roda do mouse diretamente sobre o carrossel.
+
+#### 3. Card da Tag Ativa e Ações Rápidas
+- **Nome e Endereço**: Exibe o apelido da tag e converte automaticamente as coordenadas em endereço aproximado legível (rua, bairro e cidade).
+- **Como chegar**: Abre o trajeto até a posição mais recente diretamente no aplicativo Google Maps ou no navegador.
+- **Estacionar & Proteger (Modo Sentinela / Alerta Antifurto)**: Arma a proteção de cerca virtual. Se a tag se distanciar mais de 150 metros da posição armada, alertas visuais e sonoros são disparados.
+- **Localizar agora**: Envia um comando de consulta imediata à rede Find Hub e dá zoom máximo de aproximação na tag selecionada.
+- **Tocar som / Alarme**: Dispara um sinal sonoro no alto-falante da tag via Bluetooth (BLE) quando o celular estiver ao alcance físico dela.
+- **Compartilhar**: Gera e copia um link de navegação e compartilhamento para envio a familiares ou autoridades.
+
+#### 4. Filtro de Histórico e Estatísticas
+- **Seletores de Período**: Botões de acesso rápido para filtrar por **Hoje**, **24 h**, **2 dias**, **7 dias**, **30 dias**, **90 dias** ou **1 ano**.
+- **Personalizado**: Abre campos para definir data e hora inicial e final customizadas.
+- **Cartões de Estatísticas**:
+  - **Localizações**: Quantidade de pontos registrados no período selecionado (atualizado conforme os filtros aplicados).
+  - **Distância**: Total de quilômetros percorridos pela tag ao longo do trajeto selecionado.
+  - **Duração**: Intervalo total de tempo decorrido entre o primeiro e o último registro.
+
+#### 5. Reprodução do Percurso (Replay)
+- **Play / Pause**: Inicia ou pausa a animação de reconstituição passo a passo do trajeto no mapa, estendendo o mapa e destacando o percurso percorrido em tom alaranjado.
+- **Controle Deslizante (Scrubber)**: Permite avançar ou retroceder manualmente para qualquer instante do percurso; exibe a hora exata, o tipo de captura e o índice do ponto.
+- **Seletor de Velocidade (`1x`, `2x`, `4x`)**: Ajusta a velocidade de reprodução da viagem em tempo real.
+- **Botão Loop (`Loop`)**: Quando ativado, ao atingir o término do trajeto, a reprodução reinicia do primeiro ponto automaticamente em ciclo infinito.
+- **Mini-player Flutuante**: Mantém os controles de play, velocidade, loop e parada sempre visíveis mesmo se o painel estiver recolhido.
+
+#### 6. Pontos do Mapa e Filtros de Visualização
+- **Exibir traçado**: Alterna a visibilidade da linha que conecta as localizações.
+- **Info dispositivo**: Exibe ou oculta os pontos reportados diretamente pelo seu aparelho proprietário.
+- **Rede Find Hub**: Exibe ou oculta os pontos colaborativos de outros aparelhos da rede Google.
+- **Auto-atualizar**: Faz a consulta automática da tela a cada minuto sem precisar recarregar a página.
+
+#### 7. Ferramentas e Exportação
+- **Verificar agora**: Executa uma consulta imediata no servidor para buscar novos relatórios do Google.
+- **Exportar CSV / GPX**: Faz o download completo do histórico filtrado em planilha (CSV) ou em formato padrão de trilhas de GPS (GPX) para uso no Strava, Google Earth ou outros softwares de geolocalização.
+- **Renomear Tag**: Permite alterar o nome de exibição de qualquer tag a qualquer momento.
+
 ## 1. Instalar o servidor (Windows)
 
 Você precisa do Python 3.11+, Git e Google Chrome.

@@ -96,13 +96,153 @@ body.mobile-app {
   position: fixed;
 }
 
+/* ==========================================================================
+   Login Page Styles
+   ========================================================================== */
+
 body.login-body {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 16px;
+  padding: 20px;
+  background: radial-gradient(1200px 600px at 50% -10%, color-mix(in srgb, var(--accent) 18%, transparent), transparent), var(--bg);
+  color: var(--text);
   overflow-y: auto;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 390px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  box-shadow: var(--shadow-sheet);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 10;
+}
+
+.login-card .brand {
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+}
+
+.login-card .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #0284c7, #38bdf8);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+
+.login-card .lang-select {
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 10px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  outline: none;
+}
+
+.login-card p.muted {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.login-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.login-card input {
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--surface-subtle);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  padding: 10px 14px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+
+.login-card input:focus {
+  background: var(--surface);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+}
+
+.login-card button.primary {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-text);
+  background: var(--accent);
+  border: none;
+  border-radius: 12px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.08s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--accent) 35%, transparent);
+  margin-top: 4px;
+}
+
+.login-card button.primary:hover {
+  background: var(--accent-600);
+}
+
+.login-card button.primary:active {
+  transform: scale(0.98);
+}
+
+.login-card .error {
+  color: var(--status-danger);
+  min-height: 1.2em;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+}
+
+.login-card button.link {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  padding: 6px 2px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+  transition: color 0.12s ease;
+}
+
+.login-card button.link:hover {
+  color: var(--accent);
+}
+
+.login-card .small {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-subtle);
 }
 
 body {
@@ -401,9 +541,18 @@ body {
   padding: 6px 4px;
   scrollbar-width: none;
   pointer-events: auto;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .tag-carousel::-webkit-scrollbar {
   display: none;
+}
+.tag-carousel.is-dragging {
+  cursor: grabbing !important;
+}
+.tag-carousel.is-dragging .tag-chip {
+  cursor: grabbing !important;
 }
 
 .tag-chip {
@@ -420,6 +569,8 @@ body {
   box-shadow: var(--shadow-sm);
   color: var(--text);
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
   transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
 }
 
@@ -1122,6 +1273,85 @@ body {
   cursor: pointer;
 }
 
+.playback-extra-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  gap: 8px;
+}
+
+.speed-selector {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.speed-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.speed-chips {
+  display: flex;
+  background: var(--surface-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  gap: 2px;
+}
+
+.speed-chip {
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.speed-chip:hover {
+  color: var(--text);
+}
+
+.speed-chip.on {
+  background: var(--surface);
+  color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.loop-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border);
+  background: var(--surface-card);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.loop-toggle-btn:hover {
+  color: var(--text);
+  border-color: var(--text-muted);
+}
+
+.loop-toggle-btn.active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
 /* Options & Checkboxes */
 .options-container {
   display: flex;
@@ -1654,6 +1884,33 @@ body {
 .float-replay-btn.stop:hover {
   background: rgba(239, 68, 68, 0.3);
   color: #ef4444;
+}
+
+.float-replay-btn.active {
+  background: #10b981;
+  color: #ffffff;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.float-replay-pill {
+  height: 28px;
+  padding: 0 9px;
+  border-radius: var(--radius-pill);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.float-replay-pill:active {
+  transform: scale(0.94);
 }
 
 .float-replay-info {
