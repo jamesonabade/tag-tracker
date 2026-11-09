@@ -59,7 +59,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          gradle assembleRelease --no-daemon
+          gradle :app:assembleRelease --no-daemon
           cp app/build/outputs/apk/release/app-release.apk TagTracker.apk || cp app/build/outputs/apk/release/*-release*.apk TagTracker.apk
 
       - uses: actions/upload-artifact@v4
