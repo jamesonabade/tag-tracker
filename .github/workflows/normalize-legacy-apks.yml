@@ -87,7 +87,9 @@ jobs:
           tools="$ANDROID_HOME/build-tools/$buildtools"
           test -x "$tools/apksigner"
           test -x "$tools/aapt"
-          "$tools/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/verified.txt"
+          "$tools/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/verified.txt" 2>&1
+          echo "apksigner output bytes: $(wc -c < "$RUNNER_TEMP/verified.txt")"
+          sed -n '1,50p' "$RUNNER_TEMP/verified.txt"
           actual="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/verified.txt" | head -n1 | tr '[:upper:]' '[:lower:]')"
           echo "APK certificate digest (public): $actual"
           echo "Expected certificate digest: 1978c80be9e86c3c8bb34b12d8acff4d2c6dfb2e6949625d35e4d22c5f92d22b"
