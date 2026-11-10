@@ -22,7 +22,9 @@ Cadastre em Settings > Secrets and variables > Actions os secrets:
 - `ANDROID_KEY_ALIAS`: alias da chave
 - `ANDROID_KEY_PASSWORD`: senha da chave
 
-O workflow interrompe builds em TODAS as branches quando falta qualquer secret; não usa assinatura Debug temporária.\nO certificado oficial possui SHA-256: 19:78:C8:0B:E9:E8:6C:3C:8B:B3:4B:12:D8:AC:FF:4D:2C:6D:FB:2E:69:49:62:5D:35:E4:D2:2C:5F:92:D2:2B\nO workflow exige exatamente esse certificado para impedir troca de chave acidental.
+O workflow interrompe builds em TODAS as branches quando falta qualquer secret; não usa assinatura Debug temporária.
+O certificado oficial possui SHA-256: 19:78:C8:0B:E9:E8:6C:3C:8B:B3:4B:12:D8:AC:FF:4D:2C:6D:FB:2E:69:49:62:5D:35:E4:D2:2C:5F:92:D2:2B
+O workflow exige exatamente esse certificado para impedir troca de chave acidental.
 
 ### Android Studio
 
@@ -46,7 +48,8 @@ Sem esse arquivo, o Debug utiliza a chave padrão do Android Studio e NÃO será
 
 Para criar uma nova release oficial, altere `VERSION`, integre as alterações em `main`,
 e publique a tag `v` + VERSION (por exemplo `v3.23.3`) no commit correspondente.
-Todos os pushes em qualquer branch geram um APK Release assinado, mas somente tags publicam Releases.\nO GitHub Actions verifica se a tag coincide com a versão e se o commit pertence à main.
+Todos os pushes em qualquer branch geram um APK Release assinado, mas somente tags publicam Releases.
+O GitHub Actions verifica se a tag coincide com a versão e se o commit pertence à main.
 Somente uma APK Release assinada com a chave permanente deve ser oferecida no GitHub Releases.
 
 ## Antes de desinstalar a versão Debug antiga
