@@ -2,8 +2,8 @@ name: Android APK
 
 on:
   push:
-    branches: [main]
-    paths: ["android/**", "web/**", "server/**", ".github/workflows/android.yml"]
+    branches: [main, fix/sincronizar-tags-removidas]
+    paths: ["android/**", "web/**", "server/**", "VERSION", ".github/workflows/android.yml"]
     tags: ["v*"]
   workflow_dispatch:
 
