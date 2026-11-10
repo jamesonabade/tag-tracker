@@ -110,8 +110,9 @@ tasks.register("verifyReleaseSigning") {
             "Official Release requires ANDROID_KEYSTORE_* or android/signing.properties")
     }
 }
-tasks.matching { it.name in ["assembleRelease", "bundleRelease"] }
-    .configureEach { dependsOn "verifyReleaseSigning" }
+tasks.matching { it.name in ["assembleRelease", "bundleRelease"] }.configureEach {
+    dependsOn "verifyReleaseSigning"
+}
 
 // Share the server's Python code and the web UI with the app instead of duplicating them.
 tasks.register("copySharedCode", Copy) {
