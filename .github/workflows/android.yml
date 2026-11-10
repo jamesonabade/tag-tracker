@@ -68,6 +68,12 @@ jobs:
           printf %s "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/tagtracker-release.p12"
           chmod 600 "$RUNNER_TEMP/tagtracker-release.p12"
           keytool -list -storetype PKCS12 -keystore "$RUNNER_TEMP/tagtracker-release.p12" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
+          EXPECTED_CERT_SHA256="19:78:C8:0B:E9:E8:6C:3C:8B:B3:4B:12:D8:AC:FF:4D:2C:6D:FB:2E:69:49:62:5D:35:E4:D2:2C:5F:92:D2:2B"
+          ACTUAL_CERT_SHA256="$(keytool -list -v -storetype PKCS12 -keystore "$RUNNER_TEMP/tagtracker-release.p12" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" | grep -m 1 "SHA256:" | sed -E 's/.*SHA256:[[:space:]]*//')"
+          if [[ "$ACTUAL_CERT_SHA256" != "$EXPECTED_CERT_SHA256" ]]; then
+            echo "::error::Keystore is not the permanent Tag Tracker signing key (certificate fingerprint differs)."
+            exit 1
+          fi
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/tagtracker-release.p12" >> "$GITHUB_ENV"
 
       - name: Build signed APK
