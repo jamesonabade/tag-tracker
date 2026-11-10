@@ -55,6 +55,7 @@ jobs:
           gradle-version: "8.11.1"
 
       - name: Restore official signing key
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
@@ -71,7 +72,8 @@ jobs:
           keytool -list -storetype PKCS12 -keystore "$RUNNER_TEMP/tagtracker-release.p12" -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" >/dev/null
           echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/tagtracker-release.p12" >> "$GITHUB_ENV"
 
-      - name: Build APK
+      - name: Build official APK
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
         env:
           # Gradle derives versionCode/versionName from the root VERSION file.
           # Never use github.run_number as versionCode: it can be lower than installed APKs.
@@ -82,7 +84,18 @@ jobs:
           gradle :app:assembleRelease --no-daemon
           cp app/build/outputs/apk/release/app-release.apk TagTracker.apk || cp app/build/outputs/apk/release/*-release*.apk TagTracker.apk
 
+      - name: Build Debug for code validation only
+        if: github.ref_type != 'tag' && github.ref != 'refs/heads/main'
+        run: gradle :app:assembleDebug --no-daemon
+
       - uses: actions/upload-artifact@v4
+        if: github.ref_type != 'tag' && github.ref != 'refs/heads/main'
+        with:
+          name: TagTracker-DEBUG-TEST-NOT-FOR-UPDATES
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
         with:
           name: TagTracker-apk
           path: |
