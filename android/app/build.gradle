@@ -3,7 +3,19 @@ plugins {
     id "com.chaquo.python"
 }
 
-def ks = System.getenv("ANDROID_KEYSTORE_PATH")
+def signingProperties = new Properties()
+def signingPropertiesFile = file("../signing.properties")
+if (signingPropertiesFile.isFile()) {
+    signingPropertiesFile.withInputStream { signingProperties.load(it) }
+}
+def signingValue = { String envName, String propName ->
+    System.getenv(envName) ?: signingProperties.getProperty(propName)
+}
+def ks = signingValue("ANDROID_KEYSTORE_PATH", "storeFile")
+def ksStorePassword = signingValue("ANDROID_KEYSTORE_PASSWORD", "storePassword")
+def ksAlias = signingValue("ANDROID_KEY_ALIAS", "keyAlias")
+def ksKeyPassword = signingValue("ANDROID_KEY_PASSWORD", "keyPassword")
+def officialSigningReady = ks && ksStorePassword && ksAlias && ksKeyPassword && file(ks).isFile()
 def repoRoot = file("../..")
 def gfmtDir = new File(repoRoot, "vendor/GoogleFindMyTools")
 def genPy = layout.buildDirectory.dir("sharedCode/serverpy").get().asFile
@@ -44,24 +56,27 @@ android {
     }
 
     signingConfigs {
-        if (ks) {
-            release {
+        if (officialSigningReady) {
+            official {
                 storeFile file(ks)
                 storeType "pkcs12"
-                storePassword System.getenv("ANDROID_KEYSTORE_PASSWORD")
-                keyAlias System.getenv("ANDROID_KEY_ALIAS")
-                keyPassword System.getenv("ANDROID_KEY_PASSWORD")
+                storePassword ksStorePassword
+                keyAlias ksAlias
+                keyPassword ksKeyPassword
             }
         }
     }
 
     buildTypes {
+        debug {
+            if (officialSigningReady) signingConfig signingConfigs.official
+        }
         release {
             minifyEnabled true       // R8: shrink + obfuscate the APK
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            // Without a keystore secret the release build falls back to the debug key.
-            signingConfig ks ? signingConfigs.release : signingConfigs.debug
+            // Official releases must never use a temporary debug signature.
+            if (officialSigningReady) signingConfig signingConfigs.official
         }
     }
 
@@ -89,6 +104,15 @@ chaquopy {
         }
     }
 }
+
+tasks.register("verifyReleaseSigning") {
+    doLast {
+        if (!officialSigningReady) throw new GradleException(
+            "Official Release requires ANDROID_KEYSTORE_* or android/signing.properties")
+    }
+}
+tasks.matching { it.name in ["assembleRelease", "bundleRelease"] }
+    .configureEach { dependsOn "verifyReleaseSigning" }
 
 // Share the server's Python code and the web UI with the app instead of duplicating them.
 tasks.register("copySharedCode", Copy) {
