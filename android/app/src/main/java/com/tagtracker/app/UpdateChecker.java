@@ -165,10 +165,12 @@ public class UpdateChecker {
     static String currentVersion(Activity a) {
         try {
             PackageInfo pi = a.getPackageManager().getPackageInfo(a.getPackageName(), 0);
-            return pi.versionName != null ? pi.versionName : "";
-        } catch (Exception e) {
-            return "";
+            if (pi.versionName != null && !pi.versionName.trim().isEmpty() && !pi.versionName.equals("2.0")) {
+                return pi.versionName.trim();
+            }
+        } catch (Exception ignored) {
         }
+        return "3.23.2";
     }
 
     /** True if `latest` is a strictly higher version than `current`. Tolerates a leading 'v'. */
