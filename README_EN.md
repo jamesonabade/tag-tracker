@@ -140,7 +140,7 @@ history on the phone, and backs it up to **Google Drive**. You do not need to ru
 
 **Install:** open **Actions → Android APK → latest run** in GitHub and download the **TagTracker-apk** artifact
 (or grab the APK from the latest [Release](../../releases)). Unzip if needed, copy to your phone, and install it
-(allow "install unknown apps"). To cut a release with the APK attached: `git tag v2.0 && git push --tags`.
+(allow "install unknown apps"). To cut a release with the APK attached: update the `VERSION` file, tag `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
 **First run** opens a setup screen:
 1. **Sign in to Google** — a Google page opens; sign in with the account you use in Find Hub.
@@ -172,6 +172,23 @@ python -m server.manage deluser <name>
 python -m server.manage users
 python -m server.manage poll             # fetch locations once
 ```
+
+## Versioning and Automatic Updates
+
+Tag Tracker uses a **centralized and automated** versioning and update system:
+
+- **Single Source of Truth (`VERSION`)**: The version is defined exclusively in the `VERSION` file at the root of the repository. Both the Android build (`BuildConfig.VERSION_NAME` in Gradle) and the Web server (`GET /api/version`) read dynamically from this file.
+- **Update Checks**:
+  - The Android app and web interface check the GitHub Releases API (`/releases/latest`) to compare the installed version with the latest release.
+  - If a newer release is found, an interactive prompt lets the user view release notes and download the updated APK.
+- **User Control**:
+  - In the **Settings** screen, users can toggle **"Automatically check for updates"** on or off.
+  - A **"Check for updates now"** button allows instant manual verification at any time.
+- **Release Workflow**:
+  1. Update the version number in `VERSION` (e.g. `3.24.0`).
+  2. Commit and create the Git tag (`git tag v3.24.0`).
+  3. GitHub Actions builds the release APK with the appropriate `versionCode` and `versionName` automatically.
+  4. For full guidelines for AI agents and contributors, see [`AGENTS.md`](AGENTS.md).
 
 ## Legal, disclaimer & privacy
 

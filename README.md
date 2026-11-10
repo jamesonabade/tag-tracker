@@ -208,7 +208,7 @@ histórico no celular e faz backup no **Google Drive**. Você não precisa execu
 
 **Instalação:** abra [**Actions → Android APK → execução mais recente**](https://github.com/jamesonabade/tag-tracker/actions/workflows/android.yml) no seu repositório GitHub e baixe o artefato
 **TagTracker-apks** (ou obtenha o APK na [Release](https://github.com/jamesonabade/tag-tracker/releases) mais recente, quando houver). Descompacte, se necessário, copie para o celular e instale
-(permita a instalação de aplicativos de fontes desconhecidas). Para publicar uma release com o APK anexado: `git tag v2.0 && git push --tags`.
+(permita a instalação de aplicativos de fontes desconhecidas). Para publicar uma release com o APK anexado: atualize o arquivo `VERSION`, gere a tag `git tag vX.Y.Z && git push origin vX.Y.Z`.
 
 **Na primeira execução**, será aberta uma tela de configuração:
 1. **Entrar no Google** — uma página do Google será aberta; entre com a conta que você usa no Find Hub.
@@ -240,6 +240,23 @@ python -m server.manage deluser <name>   # excluir usuário
 python -m server.manage users            # listar usuários
 python -m server.manage poll             # consultar localizações uma vez
 ```
+
+## Controle de Versões e Atualizações
+
+O Tag Tracker possui um sistema **centralizado e automatizado** de versionamento e verificação de atualizações:
+
+- **Fonte Única da Verdade (`VERSION`)**: A versão do projeto é definida unicamente no arquivo `VERSION` na raiz do repositório. O build do Android (via Gradle e `BuildConfig.VERSION_NAME`) e o servidor Web (`GET /api/version`) derivam dinamicamente a versão desse arquivo.
+- **Checagem de Atualizações**:
+  - O aplicativo e a interface web consultam a API oficial de releases do GitHub (`/releases/latest`) para comparar a versão atual instalada com a versão mais recente publicada.
+  - Se houver uma versão mais nova, um aviso interativo oferece a opção de baixar o novo APK ou abrir a página da release.
+- **Autonomia do Usuário**:
+  - Na tela de **Configurações**, na seção *Atualizações do Aplicativo*, o usuário pode ativar ou desativar o interruptor **"Buscar atualizações automaticamente"**.
+  - O usuário também pode acionar o botão **"Buscar atualizações agora"** para fazer uma verificação manual a qualquer momento.
+- **Publicação de Novas Versões**:
+  1. Atualize o número da versão no arquivo `VERSION` (ex.: `3.24.0`).
+  2. Faça commit e gere a tag Git correspondente (`git tag v3.24.0`).
+  3. O GitHub Actions gerará o APK de release assinado com o novo `versionCode` e `versionName` automaticamente.
+  4. Para mais orientações a agentes de IA e desenvolvedores, consulte [`AGENTS.md`](AGENTS.md).
 
 ## Aspectos legais, isenção de responsabilidade e privacidade
 
