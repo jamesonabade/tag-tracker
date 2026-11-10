@@ -1,0 +1,76 @@
+name: Publicar v3.23.3 (execucao unica)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/publish-v3.23.3.yml"
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main with Git history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate tested version and source build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TARGET_SHA="aaddabf05e61263353cbcba036ab069b6b9ee724"
+          SOURCE_RUN="42797654817"
+          test "$(cat VERSION)" = "3.23.3"
+          git merge-base --is-ancestor "$TARGET_SHA" HEAD
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN" --jq .head_sha)" = "$TARGET_SHA"
+          test "$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$SOURCE_RUN" --jq .conclusion)" = "success"
+          echo "Release v3.23.3 uses signed APK from successful main build $SOURCE_RUN at $TARGET_SHA"
+
+      - name: Download tested signed APK from main
+        uses: actions/download-artifact@v4
+        with:
+          name: TagTracker-signed-apk
+          run-id: 42797654817
+          github-token: ${{ github.token }}
+          path: release-apk
+
+      - name: Publish immutable tag and official GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          TARGET_SHA="aaddabf05e61263353cbcba036ab069b6b9ee724"
+          test -s release-apk/TagTracker.apk
+
+          if gh release view v3.23.3 >/dev/null 2>&1; then
+            echo "Release v3.23.3 already exists; no changes made"
+            exit 0
+          fi
+          if ! git ls-remote --exit-code --tags origin refs/tags/v3.23.3 >/dev/null 2>&1; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a v3.23.3 "$TARGET_SHA" -m "Tag Tracker v3.23.3 - tags OFF e assinatura permanente"
+            git push origin refs/tags/v3.23.3
+          fi
+
+          cat > release-notes.md <<'EOF'
+          ## Tag Tracker v3.23.3
+          - Identifica como OFF as tags que nao constam mais na conta Google Find Hub, sem confundir com falta de localizacao recente.
+          - Permite remover tags OFF da lista, preservando o historico de localizacoes e backups em CSV.
+          - Evita reativar tags ocultas ao importar historico; reativa quando aparecem novamente na conta Google.
+          - Padroniza a versao do aplicativo em 3.23.3 (versionCode 32303).
+          - Adota a chave de assinatura Android permanente compartilhada entre as branches e o Android Studio.
+
+          **Importante:** se voce possui um APK anterior assinado com outra chave, o Android nao permite atualiza-lo diretamente. Siga as orientacoes de migracao e confira as instalacoes em outros perfis, como a Pasta Segura Samsung.
+          EOF
+
+          gh release create v3.23.3 release-apk/TagTracker.apk \
+            --verify-tag \
+            --title "Tag Tracker v3.23.3" \
+            --notes-file release-notes.md
