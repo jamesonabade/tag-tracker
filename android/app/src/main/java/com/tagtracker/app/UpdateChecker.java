@@ -32,7 +32,7 @@ import java.net.URL;
 public class UpdateChecker {
     private static final String LATEST_API =
             "https://api.github.com/repos/jamesonabade/tag-tracker/releases/latest";
-    private static final String ASSET_NAME = "TagTracker.apk";
+    private static final String LEGACY_ASSET_NAME = "TagTracker.apk";
 
     /** @param userInitiated true when the user tapped "Check for updates" (so we also report
      *                        "you're up to date"); false for a quiet background check. */
@@ -77,13 +77,26 @@ public class UpdateChecker {
     private static String findApkUrl(JSONObject rel) {
         JSONArray assets = rel.optJSONArray("assets");
         if (assets == null) return null;
+
+        // Prefer the versioned APK from the latest official GitHub Release.
+        // Keep legacy filename support, without requiring duplicate downloads.
+        String releaseTag = rel.optString("tag_name", "").trim();
+        if (releaseTag.isEmpty()) return null;
+        if (!releaseTag.startsWith("v") && !releaseTag.startsWith("V")) {
+            releaseTag = "v" + releaseTag;
+        }
+        String expectedName = "TagTracker-" + releaseTag + ".apk";
+        String legacyUrl = null;
         for (int i = 0; i < assets.length(); i++) {
             JSONObject a = assets.optJSONObject(i);
-            if (a != null && ASSET_NAME.equals(a.optString("name"))) {
-                return a.optString("browser_download_url", null);
-            }
+            if (a == null) continue;
+            String filename = a.optString("name", "");
+            String url = a.optString("browser_download_url", "");
+            if (url.isEmpty()) continue;
+            if (expectedName.equals(filename)) return url;
+            if (LEGACY_ASSET_NAME.equals(filename)) legacyUrl = url;
         }
-        return null;
+        return legacyUrl;
     }
 
     private static void promptUpdate(Activity activity, String tag, String apkUrl, String notes) {
