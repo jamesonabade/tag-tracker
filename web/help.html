@@ -4,132 +4,383 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title data-i18n="help_title">Como o Tag Tracker funciona</title>
-<link rel="stylesheet" href="static/style.css">
+<link rel="stylesheet" href="static/style.css?v=3.23.2">
 <style>
-  body { background: var(--bg); }
-  .wrap { max-width: 640px; margin: 0 auto; padding: 20px 16px 48px; }
-  .top-bar { display: flex; justify-content: flex-end; margin-bottom: 8px; }
-  .hero { text-align: center; padding: 12px 16px 8px; }
-  .hero .logo { width: 56px; height: 56px; border-radius: 16px; background: linear-gradient(135deg, var(--accent), #22d3ee); margin: 0 auto 12px; display: grid; place-items: center; box-shadow: var(--shadow-lg); }
-  .hero .logo svg { width: 30px; height: 30px; }
-  .hero h1 { font-size: 24px; letter-spacing: -.02em; margin: 4px 0; }
-  .hero p { color: var(--muted); margin: 4px 0 0; }
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-top: 14px; box-shadow: var(--shadow-sm); }
-  .card h2 { font-size: 16px; margin: 0 0 10px; letter-spacing: -.01em; display: flex; align-items: center; gap: 9px; }
-  .card h2 .ic { width: 26px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); display: grid; place-items: center; font-size: 15px; flex: none; }
-  .card p { margin: 8px 0; color: var(--text); }
-  .muted2 { color: var(--muted); font-size: 13px; }
-  .vs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .vs > div { border-radius: 12px; padding: 14px; border: 1px solid var(--border); }
-  .vs .bad { background: color-mix(in srgb, var(--danger) 8%, transparent); }
-  .vs .good { background: color-mix(in srgb, var(--success) 9%, transparent); }
-  .vs h3 { margin: 0 0 6px; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
-  .vs .bad h3 { color: var(--danger); } .vs .good h3 { color: var(--success); }
-  .flow { list-style: none; margin: 0; padding: 0; }
-  .flow li { display: flex; gap: 12px; padding: 9px 0; align-items: flex-start; }
-  .flow .n { flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; }
-  .steps { counter-reset: s; list-style: none; margin: 0; padding: 0; }
-  .steps li { position: relative; padding: 12px 0 12px 42px; border-bottom: 1px solid var(--border); }
-  .steps li:last-child { border-bottom: none; }
-  .steps li::before { counter-increment: s; content: counter(s); position: absolute; left: 0; top: 11px; width: 28px; height: 28px; border-radius: 50%; background: var(--accent); color: #fff; display: grid; place-items: center; font-weight: 700; }
-  .steps b { display: block; margin-bottom: 2px; }
-  .pill { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; background: var(--chip); color: var(--muted); }
-  .cta { position: sticky; bottom: 0; padding: 14px 0 0; }
-  .cta button { width: 100%; padding: 14px; font-size: 15px; font-weight: 700; border-radius: 12px; background: var(--accent); color: #fff; border: none; box-shadow: var(--shadow-lg); }
+  html,
+  body {
+    width: 100%;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    position: static !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    user-select: text !important;
+  }
+  body {
+    background: var(--surface-subtle);
+    color: var(--text);
+  }
+  .wrap {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 16px 18px calc(60px + env(safe-area-inset-bottom, 24px));
+    min-height: 100vh;
+    box-sizing: border-box;
+  }
+  .top-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 8px;
+  }
+  .hero {
+    text-align: center;
+    padding: 16px 12px 10px;
+  }
+  .hero .logo-box {
+    width: 58px;
+    height: 58px;
+    border-radius: 20px;
+    background: var(--text);
+    color: var(--surface);
+    margin: 0 auto 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+  }
+  .hero h1 {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin: 4px 0;
+    color: var(--text);
+  }
+  .hero p {
+    color: var(--text-muted);
+    font-size: 13.5px;
+    margin: 4px 0 0;
+  }
+
+  .modern-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px;
+    margin-top: 14px;
+    box-shadow: var(--shadow-sm);
+  }
+  .modern-card h2 {
+    font-size: 15px;
+    font-weight: 800;
+    margin: 0 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+  }
+  .modern-card h2 .ic-box {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    background: var(--surface-card);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .vs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .vs-col {
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+  }
+  .vs-col.bad {
+    background: var(--status-danger-subtle);
+    border-color: color-mix(in srgb, var(--status-danger) 25%, transparent);
+  }
+  .vs-col.good {
+    background: var(--status-active-subtle);
+    border-color: color-mix(in srgb, var(--status-active) 25%, transparent);
+  }
+  .vs-col h3 {
+    margin: 0 0 5px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .vs-col.bad h3 { color: var(--status-danger); }
+  .vs-col.good h3 { color: var(--status-active); }
+  .vs-col p {
+    font-size: 12px;
+    color: var(--text);
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .flow-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .flow-list li {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .flow-list .n-pill {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--text);
+    color: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+  }
+
+  .steps-list {
+    counter-reset: s;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .steps-list li {
+    position: relative;
+    padding: 12px 0 12px 38px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-size: 13px;
+  }
+  .steps-list li:last-child {
+    border-bottom: none;
+  }
+  .steps-list li::before {
+    counter-increment: s;
+    content: counter(s);
+    position: absolute;
+    left: 0;
+    top: 12px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 12px;
+  }
+  .steps-list b {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 13.5px;
+    color: var(--text);
+  }
+
+  .tag-badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    color: var(--text-muted);
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+  .tag-badge.req {
+    background: var(--status-danger-subtle);
+    color: var(--status-danger);
+  }
+  .tag-badge.rec {
+    background: var(--status-active-subtle);
+    color: var(--status-active);
+  }
+
+  .agree-label {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    background: var(--surface-card);
+    border: 1.5px solid var(--border);
+    cursor: pointer;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: all 0.2s ease;
+  }
+  .agree-label:active {
+    background: var(--border-subtle);
+  }
+  .agree-label.checked {
+    border-color: var(--accent);
+    background: var(--accent-subtle);
+  }
+  .agree-checkbox {
+    width: 22px;
+    height: 22px;
+    margin-top: 1px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #0284c7;
+  }
+  .agree-text {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  .cta-bar {
+    position: sticky;
+    bottom: 0;
+    padding: 16px 0 4px;
+    background: linear-gradient(to top, var(--surface-subtle) 85%, transparent);
+  }
+  .cta-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    border-radius: var(--radius-pill);
+    background: var(--text);
+    color: var(--surface);
+    border: none;
+    box-shadow: var(--shadow-md);
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+  }
+  .cta-btn:active {
+    transform: scale(0.97);
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top-bar">
-    <select id="langSelect" class="lang-select" title="Idioma / Language" aria-label="Idioma">
+    <select id="langSelect" class="pill-select" title="Idioma / Language" aria-label="Idioma">
       <option value="pt-BR">PT</option>
       <option value="en">EN</option>
     </select>
   </div>
 
   <div class="hero">
-    <div class="logo"><svg viewBox="0 0 108 108"><path d="M54 20c-14 0-24 10-24 24 0 17 24 44 24 44s24-27 24-44c0-14-10-24-24-24z" fill="#fff"/><circle cx="54" cy="44" r="9" fill="#2563eb"/></svg></div>
+    <div class="logo-box">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
     <h1 data-i18n="app_title">Tag Tracker</h1>
     <p data-i18n="help_hero_sub">Histórico completo de deslocamento e alertas antifurto para suas tags</p>
   </div>
 
-  <div class="card">
-    <h2><span class="ic">?</span> <span data-i18n="help_why_title">Por que este app existe</span></h2>
-    <div class="vs">
-      <div class="bad">
+  <div class="modern-card">
+    <h2><span class="ic-box">?</span> <span data-i18n="help_why_title">Por que este app existe</span></h2>
+    <div class="vs-grid">
+      <div class="vs-col bad">
         <h3 data-i18n="help_why_google_title">Google Find Hub</h3>
-        <p class="muted2" data-i18n="help_why_google_desc">Mostra apenas a <b>última</b> localização. Sem histórico — não é possível ver por onde sua tag passou.</p>
+        <p data-i18n="help_why_google_desc">Mostra apenas a <b>última</b> localização. Sem histórico — não é possível ver por onde sua tag passou.</p>
       </div>
-      <div class="good">
+      <div class="vs-col good">
         <h3 data-i18n="help_why_tt_title">Tag Tracker</h3>
-        <p class="muted2" data-i18n="help_why_tt_desc">Salva <b>todas</b> as localizações ao longo do tempo: percurso completo, histórico de 1 dia a 1 ano, replay e alertas de furto.</p>
+        <p data-i18n="help_why_tt_desc">Salva <b>todas</b> as localizações ao longo do tempo: percurso completo, histórico de 1 dia a 1 ano, replay e alertas de furto.</p>
       </div>
     </div>
   </div>
 
-  <div class="card">
-    <h2><span class="ic">↻</span> <span data-i18n="help_flow_title">Como uma localização chega ao seu celular</span></h2>
-    <ul class="flow">
-      <li><span class="n">1</span><div data-i18n="help_flow_1">Sua tag emite um pequeno sinal Bluetooth criptografado a cada 1–2 segundos.</div></li>
-      <li><span class="n">2</span><div data-i18n="help_flow_2">Qualquer celular Android passando por perto (~10–30 m) detecta o sinal e envia a posição criptografada para o Google — de forma silenciosa e anônima.</div></li>
-      <li><span class="n">3</span><div data-i18n="help_flow_3">Seu celular solicita os dados ao Google pela internet, e <b>apenas o seu celular</b> consegue descriptografá-los (etapa de Desbloqueio).</div></li>
-      <li><span class="n">4</span><div data-i18n="help_flow_4">A rota é desenhada no mapa, gravada no histórico e sincronizada com o Google Drive.</div></li>
+  <div class="modern-card">
+    <h2><span class="ic-box">↻</span> <span data-i18n="help_flow_title">Como uma localização chega ao seu celular</span></h2>
+    <ul class="flow-list">
+      <li><span class="n-pill">1</span><div data-i18n="help_flow_1">Sua tag emite um pequeno sinal Bluetooth criptografado a cada 1–2 segundos.</div></li>
+      <li><span class="n-pill">2</span><div data-i18n="help_flow_2">Qualquer celular Android passando por perto (~10–30 m) detecta o sinal e envia a posição criptografada para o Google — de forma silenciosa e anônima.</div></li>
+      <li><span class="n-pill">3</span><div data-i18n="help_flow_3">Seu celular solicita os dados ao Google pela internet, e <b>apenas o seu celular</b> consegue descriptografá-los (etapa de Desbloqueio).</div></li>
+      <li><span class="n-pill">4</span><div data-i18n="help_flow_4">A rota é desenhada no mapa, gravada no histórico e sincronizada com o Google Drive.</div></li>
     </ul>
-    <p class="muted2" data-i18n="help_flow_note">As atualizações chegam sempre que um celular passa perto da tag — frequente em áreas movimentadas, raro em locais ermos. Seu celular recebe pela internet, logo a tag pode estar em qualquer lugar.</p>
+    <p style="font-size:12px;color:var(--text-muted);margin-top:10px;" data-i18n="help_flow_note">As atualizações chegam sempre que um celular passa perto da tag — frequente em áreas movimentadas, raro em locais ermos. Seu celular recebe pela internet, logo a tag pode estar em qualquer lugar.</p>
   </div>
 
-  <div class="card">
-    <h2><span class="ic">⚑</span> <span data-i18n="help_setup_title">Configuração inicial</span></h2>
-    <ol class="steps">
+  <div class="modern-card">
+    <h2><span class="ic-box">⚑</span> <span data-i18n="help_setup_title">Configuração inicial</span></h2>
+    <ol class="steps-list">
       <li>
         <b data-i18n="help_step_1_title">Conecte sua conta Google</b>
-        <span class="muted2" data-i18n="help_step_1_desc">Use a mesma conta onde a tag está cadastrada. Isso lista seus rastreadores.</span>
+        <span style="color:var(--text-muted)" data-i18n="help_step_1_desc">Use a mesma conta onde a tag está cadastrada. Isso lista seus rastreadores.</span>
       </li>
       <li>
-        <b><span data-i18n="help_step_2_title">Desbloqueie a criptografia</span> <span class="pill" data-i18n="help_required">obrigatório</span></b>
-        <span class="muted2" data-i18n="help_step_2_desc">Digite o bloqueio de tela do celular na página do Google — isso permite ao app descriptografar as posições. Sem isso, o mapa fica vazio.</span>
+        <b><span data-i18n="help_step_2_title">Desbloqueie a criptografia</span> <span class="tag-badge req" data-i18n="help_required">obrigatório</span></b>
+        <span style="color:var(--text-muted)" data-i18n="help_step_2_desc">Digite o bloqueio de tela do celular na página do Google — isso permite ao app descriptografar as posições. Sem isso, o mapa fica vazio.</span>
       </li>
       <li>
         <b data-i18n="help_step_3_title">Ative a verificação em segundo plano</b>
-        <span class="muted2" data-i18n="help_step_3_desc">O app verifica a cada 15 min e salva cada localização, quase sem gastar bateria.</span>
+        <span style="color:var(--text-muted)" data-i18n="help_step_3_desc">O app verifica a cada 15 min e salva cada localização, quase sem gastar bateria.</span>
       </li>
       <li>
-        <b><span data-i18n="help_step_4_title">Sincronize com o Google Drive</span> <span class="pill" data-i18n="help_recommended">recomendado</span></b>
-        <span class="muted2" data-i18n="help_step_4_desc">O modo padrão salva automaticamente no seu Drive, para que você recupere o histórico em outro celular.</span>
+        <b><span data-i18n="help_step_4_title">Sincronize com o Google Drive</span> <span class="tag-badge rec" data-i18n="help_recommended">recomendado</span></b>
+        <span style="color:var(--text-muted)" data-i18n="help_step_4_desc">O modo padrão salva automaticamente no seu Drive, para que você recupere o histórico em outro celular.</span>
       </li>
       <li>
         <b data-i18n="help_step_5_title">Estacione e proteja</b>
-        <span class="muted2" data-i18n="help_step_5_desc">Toque em Estacionar ao deixar sua bicicleta ou veículo — você receberá um alerta sonoro caso ela se mova.</span>
+        <span style="color:var(--text-muted)" data-i18n="help_step_5_desc">Toque em Estacionar ao deixar sua bicicleta ou veículo — você receberá um alerta sonoro caso ela se mova.</span>
       </li>
     </ol>
   </div>
 
-  <div class="card">
-    <h2><span class="ic">★</span> <span data-i18n="help_features_title">O que você pode fazer</span></h2>
-    <p class="muted2" data-i18n="help_features_desc">• Ver rotas completas para Hoje, 2 dias, 7 dias, 30 dias, 1 ano ou datas personalizadas &nbsp; • Replay do percurso &nbsp; • Tocar alarme na tag quando estiver próximo &nbsp; • Exportar CSV/GPX &nbsp; • Trocar entre OpenStreetMap, Google Maps e Satélite.</p>
+  <div class="modern-card">
+    <h2><span class="ic-box">★</span> <span data-i18n="help_features_title">O que você pode fazer</span></h2>
+    <p style="font-size:12.5px;color:var(--text-muted);line-height:1.5;" data-i18n="help_features_desc">• Ver rotas completas para Hoje, 2 dias, 7 dias, 30 dias, 1 ano ou datas personalizadas &nbsp; • Replay do percurso &nbsp; • Tocar alarme na tag quando estiver próximo &nbsp; • Exportar CSV/GPX &nbsp; • Trocar entre OpenStreetMap, Google Maps e Satélite.</p>
   </div>
 
-  <div class="card">
-    <h2><span class="ic">§</span> <span data-i18n="help_disclaimer_title">Antes de começar</span></h2>
-    <p class="muted2" data-i18n="help_disclaimer_desc"><b>Não afiliado ao Google.</b> Este é um aplicativo independente que utiliza um método <b>não oficial</b> para ler a rede Find Hub. O Google pode alterar ou bloquear isso a qualquer momento. Use apenas para rastrear <b>seus próprios bens</b> — nunca uma pessoa sem seu consentimento. Uso por sua conta e risco.</p>
-    <label style="display:flex;gap:10px;align-items:flex-start;margin-top:10px;font-size:13px;cursor:pointer">
-      <input type="checkbox" id="agree" style="width:18px;height:18px;margin-top:1px;accent-color:var(--accent)">
-      <span data-i18n="help_agree_check">Rastrearei apenas <b>meus próprios pertences</b> (nunca uma pessoa sem consentimento), e aceito o termo de responsabilidade e uso por minha conta e risco.</span>
+  <div class="modern-card">
+    <h2><span class="ic-box">§</span> <span data-i18n="help_disclaimer_title">Antes de começar</span></h2>
+    <p style="font-size:12.5px;color:var(--text-muted);line-height:1.5;" data-i18n="help_disclaimer_desc"><b>Não afiliado ao Google.</b> Este é um aplicativo independente que utiliza um método <b>não oficial</b> para ler a rede Find Hub. O Google pode alterar ou bloquear isso a qualquer momento. Use apenas para rastrear <b>seus próprios bens</b> — nunca uma pessoa sem seu consentimento. Uso por sua conta e risco.</p>
+    <label class="agree-label" id="agreeLabel" for="agree">
+      <input type="checkbox" id="agree" class="agree-checkbox">
+      <span class="agree-text" data-i18n="help_agree_check">Rastrearei apenas <b>meus próprios pertences</b> (nunca uma pessoa sem consentimento), e aceito o termo de responsabilidade e uso por minha conta e risco.</span>
     </label>
   </div>
 
-  <div class="cta"><button id="start" disabled style="opacity:.5" data-i18n="help_start_btn">Concordar &amp; iniciar configuração</button></div>
+  <div class="cta-bar">
+    <button id="start" disabled style="opacity:.45" class="cta-btn" data-i18n="help_start_btn">Concordar &amp; iniciar configuração</button>
+  </div>
 </div>
-<script src="static/i18n.js"></script>
+<script src="static/i18n.js?v=3.23.2"></script>
 <script>
   var langSel = document.getElementById('langSelect');
   if (langSel && window.I18N) {
     langSel.value = window.I18N.lang;
     langSel.addEventListener('change', function() { window.I18N.setLang(langSel.value); });
   }
-  var cb = document.getElementById('agree'), b = document.getElementById('start');
-  cb.addEventListener('change', function(){ b.disabled = !cb.checked; b.style.opacity = cb.checked ? '1' : '.5'; });
-  b.addEventListener('click', function(){
+  var cb = document.getElementById('agree'), b = document.getElementById('start'), label = document.getElementById('agreeLabel');
+  function syncAgreeState() {
+    b.disabled = !cb.checked;
+    b.style.opacity = cb.checked ? '1' : '.45';
+    b.style.cursor = cb.checked ? 'pointer' : 'not-allowed';
+    if (label) label.classList.toggle('checked', cb.checked);
+  }
+  cb.addEventListener('change', syncAgreeState);
+  cb.addEventListener('input', syncAgreeState);
+  b.addEventListener('click', function() {
+    if (b.disabled) return;
     try { localStorage.setItem('tt_consent', '1'); } catch(e){}
     if (window.TagTrackerApp && TagTrackerApp.doneHelp) TagTrackerApp.doneHelp(); else window.close();
   });

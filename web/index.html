@@ -2,87 +2,300 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
 <title data-i18n="app_title">Tag Tracker</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
-<link rel="stylesheet" href="static/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="static/style.css?v=3.23.2">
 <link rel="manifest" href="static/manifest.webmanifest">
-<meta name="theme-color" content="#2563eb">
+<meta name="theme-color" content="#0f172a">
 </head>
-<body>
+<body class="mobile-app">
+<!-- Mapa Fullscreen de Fundo -->
 <div id="map"></div>
 
-<aside id="panel">
-  <div class="panel-head">
-    <div class="brand"><span class="dot"></span> Tag Tracker</div>
-    <select id="langSelect" class="lang-select" title="Idioma / Language" aria-label="Idioma">
+<!-- Barra Flutuante Superior (Status, Nuvem, Idioma e Configurações) -->
+<header class="top-floating-bar" id="topBar">
+  <div class="brand-pill" id="topBrandPill">
+    <span class="status-pulse" id="topStatusDot"></span>
+    <span class="brand-title" id="topTagName">Tag Tracker</span>
+  </div>
+  <div class="top-bar-actions">
+    <select id="langSelect" class="pill-select" title="Idioma / Language" aria-label="Idioma">
       <option value="pt-BR">PT</option>
       <option value="en">EN</option>
     </select>
     <span id="sync" class="sync-badge off" title="Google Drive sync" data-i18n="sync_drive">Drive</span>
-    <button id="pro" class="sync-badge off" hidden title="Unlock Pro" data-i18n="pro_free">🔒 Free</button>
-    <button id="toggle" class="icon" title="Hide panel" data-i18n-title="toggle_panel">▾</button>
+    <button id="pro" class="pro-pill off" hidden title="Desbloquear Pro" data-i18n="pro_free">🔒 Free</button>
+    <button id="logout" class="icon-pill-btn pressable" title="Configurações" aria-label="Configurações">
+      <i class="fa-solid fa-gear"></i>
+    </button>
+  </div>
+</header>
+
+<!-- ================= BOTÕES FLUTUANTES SOBRE O MAPA (ESTILO PROTÓTIPO) ================= -->
+<div class="map-floating-controls" id="mapControls">
+  <button id="btnZoomIn" class="map-control-btn pressable" title="Aumentar zoom" aria-label="Aumentar zoom">
+    <i class="fa-solid fa-plus"></i>
+  </button>
+  <button id="btnZoomOut" class="map-control-btn pressable" title="Diminuir zoom" aria-label="Diminuir zoom">
+    <i class="fa-solid fa-minus"></i>
+  </button>
+  <button id="btnLayers" class="map-control-btn pressable" title="Alternar camadas de mapa" aria-label="Camadas">
+    <i class="fa-solid fa-layer-group"></i>
+  </button>
+  <button id="btnRecenter" class="map-control-btn pressable" title="Centralizar na tag com zoom máximo" aria-label="Centralizar na tag">
+    <i class="fa-solid fa-crosshairs"></i>
+  </button>
+</div>
+
+<!-- Toast Flutuante de Camada -->
+<div id="mapToast" class="map-layer-toast" hidden></div>
+
+<!-- Mini Player Flutuante de Replay (Exibido quando o mapa se estende durante o percurso) -->
+<div id="floatingReplayBar" class="floating-replay-bar" hidden>
+  <button id="floatPlayBtn" class="float-replay-btn pressable" title="Pausar / Continuar" aria-label="Pausar">
+    <i id="floatPlayIcon" class="fa-solid fa-pause"></i>
+  </button>
+  <div class="float-replay-info">
+    <div class="float-replay-title" id="floatReplayTitle">Replay do Percurso</div>
+    <div class="float-replay-sub" id="floatReplaySub">Ponto 1 de 1</div>
+  </div>
+  <button id="floatSpeedBtn" class="float-replay-pill pressable" title="Alterar velocidade" aria-label="Velocidade">1x</button>
+  <button id="floatLoopBtn" class="float-replay-btn pressable" title="Repetir em loop" aria-label="Loop">
+    <i class="fa-solid fa-repeat"></i>
+  </button>
+  <button id="floatStopBtn" class="float-replay-btn stop pressable" title="Parar replay" aria-label="Parar">
+    <i class="fa-solid fa-stop"></i>
+  </button>
+  <div class="float-replay-progress-bg">
+    <div class="float-replay-progress-bar" id="floatReplayBarFill" style="width: 0%;"></div>
+  </div>
+</div>
+
+<!-- Carrossel Horizontal de Tags (Flutuante acima da Folha) -->
+<nav class="tag-carousel-wrapper" id="tagCarouselWrapper">
+  <div class="tag-carousel" id="tagCarousel">
+    <!-- Gerado dinamicamente no app.js -->
+  </div>
+  <!-- Select legado oculto para compatibilidade -->
+  <select id="device" class="legacy-device-select" style="display:none;"></select>
+</nav>
+
+<!-- Folha Inferior Deslizante (Bottom Sheet Fluida) -->
+<aside id="panel" class="bottom-sheet state-half">
+  <!-- Pílula de Arraste (Touch / Click Handle) -->
+  <div class="sheet-handle-zone" id="sheetHandleZone" title="Deslize ou toque para alternar tamanho">
+    <div class="sheet-handle"></div>
   </div>
 
-  <div class="panel-body">
-    <label class="field"><span data-i18n="label_tag">Tag</span>
-      <select id="device"></select>
-    </label>
-    <div id="latest" class="latest"></div>
-    <button id="park" class="park" data-i18n="park_btn_idle">🅿️ Park &amp; guard</button>
-    <div class="row">
-      <button id="locate" class="primary" data-i18n="locate_now">📍 Locate now</button>
-      <button id="ring" data-i18n="ring">🔔 Ring</button>
-      <button id="share" data-i18n="share">↗ Share</button>
+  <div class="sheet-content" id="sheetContent">
+    <!-- Card de Identificação da Tag Selecionada -->
+    <div class="active-tag-card">
+      <div class="active-tag-main">
+        <div class="tag-headline">
+          <h2 id="activeTagName" class="tag-title">Tag</h2>
+          <button id="rename" class="rename-icon-btn" title="Renomear tag" aria-label="Renomear">
+            <i class="fa-regular fa-pen-to-square"></i>
+          </button>
+        </div>
+        <div id="latest" class="tag-address-row"></div>
+      </div>
+      <div class="active-tag-side">
+        <a id="dir" target="_blank" rel="noopener" class="directions-pill-btn" href="#">
+          <i class="fa-regular fa-compass"></i>
+          <span data-i18n="get_directions">Rotas</span>
+        </a>
+      </div>
     </div>
 
-    <div class="field"><span data-i18n="history_label">History</span>
-      <div class="chips" id="ranges">
-        <button data-h="today" data-i18n="range_today">Today</button>
+    <!-- MODO SENTINELA / ANTIFURTO (Card em Destaque) -->
+    <div class="guard-card" id="guardCard">
+      <div class="guard-info">
+        <div class="guard-icon-wrap" id="guardIconWrap">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <div class="guard-texts">
+          <div class="guard-title" data-i18n="park_card_title">Alerta Antifurto</div>
+          <div class="guard-subtitle" id="guardSubtitle" data-i18n="park_card_desc">Disparar alarme se mover 150m</div>
+        </div>
+      </div>
+      <button id="park" class="guard-switch-btn" aria-label="Alternar modo antifurto">
+        <span class="guard-switch-thumb"></span>
+      </button>
+    </div>
+
+    <!-- GRADE DE AÇÕES RÁPIDAS (Cards Táteis Verticais) -->
+    <div class="quick-actions-grid">
+      <button id="locate" class="action-card-btn primary">
+        <div class="action-icon text-sky">
+          <i class="fa-solid fa-location-crosshairs text-sky-400"></i>
+        </div>
+        <span class="action-label" data-i18n="locate_now">Localizar</span>
+      </button>
+
+      <button id="ring" class="action-card-btn secondary">
+        <div class="action-icon text-amber">
+          <i class="fa-solid fa-bell text-amber-500"></i>
+        </div>
+        <span class="action-label" data-i18n="ring">Tocar som</span>
+      </button>
+
+      <button id="share" class="action-card-btn secondary">
+        <div class="action-icon text-slate">
+          <i class="fa-solid fa-arrow-up-from-bracket text-slate-600"></i>
+        </div>
+        <span class="action-label" data-i18n="share">Compartilhar</span>
+      </button>
+    </div>
+
+    <!-- SELETOR DE HISTÓRICO (Segmented Chips Horizontais) -->
+    <div class="section-container">
+      <div class="section-header">
+        <span class="section-title" data-i18n="history_label">Histórico de Rota</span>
+        <span class="section-badge" id="historyCount"></span>
+      </div>
+      <div class="chips-scroller" id="ranges">
+        <button data-h="today" data-i18n="range_today">Hoje</button>
         <button data-h="24">24 h</button>
-        <button data-h="48" data-i18n="range_2d">2 days</button>
-        <button data-h="168" class="on" data-i18n="range_7d">7 days</button>
-        <button data-h="720" data-i18n="range_30d">30 days</button>
-        <button data-h="2160" data-i18n="range_90d">90 days</button>
-        <button data-h="8760" data-i18n="range_1y">1 year</button>
-        <button data-h="custom" data-i18n="range_custom">Custom</button>
+        <button data-h="168" class="on" data-i18n="range_7d">7 dias</button>
+        <button data-h="720" data-i18n="range_30d">30 dias</button>
+        <button data-h="custom" data-i18n="range_custom">Personalizado</button>
+      </div>
+
+      <div id="custom" class="custom-range-card" hidden style="display: none;">
+        <div class="custom-field">
+          <label><span data-i18n="custom_from">De</span><input type="datetime-local" id="from"></label>
+        </div>
+        <div class="custom-field">
+          <label><span data-i18n="custom_to">Até</span><input type="datetime-local" id="to"></label>
+        </div>
+        <button id="applyCustom" class="custom-apply-btn" data-i18n="custom_show">Exibir</button>
       </div>
     </div>
-    <div id="custom" class="custom" hidden>
-      <label><span data-i18n="custom_from">From</span><input type="datetime-local" id="from"></label>
-      <label><span data-i18n="custom_to">To</span><input type="datetime-local" id="to"></label>
-      <button id="applyCustom" data-i18n="custom_show">Show</button>
-    </div>
 
-    <div class="stats" id="stats"></div>
+    <!-- CARTÕES DE MÉTRICAS / ESTATÍSTICAS -->
+    <div class="stats-grid" id="stats"></div>
 
-    <div class="field"><span data-i18n="playback_label">Playback</span>
-      <div class="playback">
-        <button id="play" class="icon" title="Play">▶</button>
-        <input type="range" id="scrub" min="0" max="0" value="0">
+    <!-- REPRODUTOR DE ROTA / REPLAY -->
+    <div class="playback-card">
+      <div class="playback-header">
+        <div class="playback-title-row">
+          <i class="fa-solid fa-play" style="font-size: 10px; color: var(--text-muted);"></i>
+          <span data-i18n="playback_label">Replay do Percurso</span>
+        </div>
+        <div class="muted small scrub-indicator" id="scrubLabel">&nbsp;</div>
       </div>
-      <div class="muted small" id="scrubLabel">&nbsp;</div>
+      <div class="playback-controls">
+        <button id="play" class="play-pill-btn" title="Reproduzir" aria-label="Reproduzir">
+          <i class="fa-solid fa-play"></i>
+        </button>
+        <div class="slider-track-wrap">
+          <input type="range" id="scrub" min="0" max="0" value="0" class="modern-slider">
+        </div>
+      </div>
+      <div class="playback-extra-controls">
+        <div class="speed-selector">
+          <span class="speed-label" data-i18n="speed_label">Velocidade:</span>
+          <div class="speed-chips" id="speedChips">
+            <button type="button" class="speed-chip on" data-speed="1">1x</button>
+            <button type="button" class="speed-chip" data-speed="2">2x</button>
+            <button type="button" class="speed-chip" data-speed="4">4x</button>
+          </div>
+        </div>
+        <button type="button" id="loopBtn" class="loop-toggle-btn pressable" title="Repetir percurso em loop" aria-label="Repetir em loop">
+          <i class="fa-solid fa-repeat"></i>
+          <span data-i18n="loop">Loop</span>
+        </button>
+      </div>
     </div>
 
-    <label class="check"><input type="checkbox" id="showPoints" checked> <span data-i18n="show_points">Show individual points</span></label>
-    <label class="check"><input type="checkbox" id="autoRefresh" checked> <span data-i18n="auto_refresh">Auto-refresh every minute</span></label>
+    <!-- ================= SEÇÃO: PONTOS DO MAPA ================= -->
+    <div class="section-container" style="margin-top: 4px;">
+      <div class="section-header">
+        <span class="section-title" data-i18n="map_points_title">Pontos do Mapa</span>
+        <span class="section-badge" data-i18n="map_filters_subtitle">Filtros de visualização</span>
+      </div>
+      <div class="checkbox-grid">
+        <!-- Filtro 1: Exibir traçado -->
+        <label class="modern-check">
+          <input type="checkbox" id="showTrack" checked>
+          <span class="check-box"></span>
+          <span data-i18n="show_track">Exibir traçado</span>
+        </label>
 
-    <div class="row">
-      <button id="pollNow" data-i18n="check_now">Check now</button>
-      <button id="csv">CSV</button>
-      <button id="gpx">GPX</button>
+        <!-- Filtro 2: Info dispositivo -->
+        <label class="modern-check">
+          <input type="checkbox" id="showDevicePoints" checked>
+          <span class="check-box"></span>
+          <span data-i18n="filter_device">Info dispositivo</span>
+        </label>
+
+        <!-- Filtro 3: Rede Find Hub -->
+        <label class="modern-check">
+          <input type="checkbox" id="showNetworkPoints" checked>
+          <span class="check-box"></span>
+          <span data-i18n="filter_network">Rede Find Hub</span>
+        </label>
+
+        <!-- Filtro 4: Auto-atualizar -->
+        <label class="modern-check">
+          <input type="checkbox" id="autoRefresh" checked>
+          <span class="check-box"></span>
+          <span data-i18n="auto_refresh">Auto-atualizar</span>
+        </label>
+
+        <!-- Compatibilidade oculta com showPoints -->
+        <input type="checkbox" id="showPoints" style="display:none;" checked>
+      </div>
     </div>
-    <div class="muted small" id="pollStatus"></div>
-    <div class="row foot">
-      <button id="rename" class="link" data-i18n="rename_tag">Rename tag</button>
-      <button id="server" class="link" hidden data-i18n="change_server">Change server</button>
-      <button id="logout" class="link">Configurações</button>
+
+    <!-- OPÇÕES ADICIONAIS & EXPORTAÇÃO -->
+    <div class="options-container">
+      <div class="export-and-check-row">
+        <button id="pollNow" class="pill-outline-btn primary-subtle" data-i18n="check_now">
+          <i class="fa-solid fa-rotate" style="font-size: 11px;"></i>
+          <span data-i18n="check_now">Verificar agora</span>
+        </button>
+        <div class="export-btns-group">
+          <button id="csv" class="pill-outline-btn">CSV</button>
+          <button id="gpx" class="pill-outline-btn">GPX</button>
+        </div>
+      </div>
+
+      <div class="poll-status-text" id="pollStatus"></div>
+
+      <!-- Rodapé / Ações de Suporte -->
+      <div class="sheet-footer">
+        <button id="server" class="link-btn" hidden data-i18n="change_server">Alterar servidor</button>
+        <button id="toggle" class="pill-outline-btn toggle-size-btn" data-i18n-title="toggle_panel">
+          <i id="toggleIcon" class="fa-solid fa-chevron-down" style="font-size: 11px;"></i>
+          <span id="toggleText">Recolher painel</span>
+        </button>
+      </div>
     </div>
   </div>
 </aside>
 
+<!-- Modal Fluido de Renomear Tag (Substitui window.prompt) -->
+<div id="renameModal" class="modal-backdrop" hidden>
+  <div class="modal-card">
+    <div class="modal-header">
+      <h3 class="modal-title" data-i18n="rename_tag">Renomear Tag</h3>
+      <button id="closeRenameModal" class="modal-close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <input type="text" id="renameInput" class="modal-input" maxlength="40" placeholder="Ex: Chave do Carro">
+    </div>
+    <div class="modal-actions">
+      <button id="cancelRename" class="pill-btn cancel" data-i18n="cancel">Cancelar</button>
+      <button id="saveRename" class="pill-btn confirm" data-i18n="save">Salvar</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
-<script src="static/i18n.js"></script>
-<script src="static/app.js"></script>
+<script src="static/i18n.js?v=3.23.2"></script>
+<script src="static/app.js?v=3.23.2"></script>
 </body>
 </html>

@@ -184,21 +184,35 @@ def history(device_id: str, start: int, end: int, format: str = "json", user: st
 
 # ---------- pages ----------
 
+NO_CACHE_HEADERS = {
+    "Cache-Control": "no-cache, no-store, must-revalidate",
+    "Pragma": "no-cache",
+    "Expires": "0",
+}
+
+
 @app.get("/")
 def index(request: Request):
     if not request.session.get("user"):
-        return RedirectResponse("/login")
-    return FileResponse(WEB_DIR / "index.html")
+        return RedirectResponse("/login", status_code=303, headers=NO_CACHE_HEADERS)
+    return FileResponse(WEB_DIR / "index.html", headers=NO_CACHE_HEADERS)
 
 
 @app.get("/login")
-def login_page():
-    return FileResponse(WEB_DIR / "login.html")
+def login_page(request: Request):
+    if request.session.get("user"):
+        return RedirectResponse("/", status_code=303, headers=NO_CACHE_HEADERS)
+    return FileResponse(WEB_DIR / "login.html", headers=NO_CACHE_HEADERS)
 
 
 @app.get("/help")
 def help_page():
-    return FileResponse(WEB_DIR / "help.html")
+    return FileResponse(WEB_DIR / "help.html", headers=NO_CACHE_HEADERS)
+
+
+@app.get("/settings")
+def settings_page():
+    return FileResponse(WEB_DIR / "settings.html", headers=NO_CACHE_HEADERS)
 
 
 @app.get("/health")
