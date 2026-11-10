@@ -122,6 +122,13 @@ def edit_device(device_id: str, body: DeviceEdit, user: str = Depends(require_us
     return {"ok": True}
 
 
+@app.delete("/api/devices/{device_id}")
+def hide_offline_device(device_id: str, user: str = Depends(require_user)):
+    if not db.hide_offline_device(device_id):
+        raise HTTPException(409, "A tag precisa estar OFF para ser removida da lista")
+    return {"ok": True}
+
+
 @app.post("/api/poll-now")
 def poll_now(user: str = Depends(require_user)):
     if not POLLING_ENABLED:

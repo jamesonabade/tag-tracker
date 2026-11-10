@@ -176,6 +176,16 @@ public class MainActivity extends Activity {
         }
 
         @JavascriptInterface
+        public boolean removeOfflineDevice(String deviceId) {
+            try {
+                return TagApp.py(MainActivity.this)
+                        .callAttr("hide_offline_device", deviceId).toBoolean();
+            } catch (Exception ignored) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
         public void openSettings() {
             runOnUiThread(() -> startActivity(new Intent(MainActivity.this, SettingsActivity.class)));
         }
