@@ -141,3 +141,4 @@ Ao preparar uma nova versão:
 - **Chaquopy & Shared Assets**:
   - A task `:app:copySharedCode` copia automaticamente os arquivos de `server/` e `web/` para os assets do Android antes da compilação.
   - Não edite arquivos dentro de `android/app/build/sharedCode/`; sempre edite os arquivos originais em `server/` e `web/`.
+
