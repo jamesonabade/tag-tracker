@@ -53,6 +53,15 @@ jobs:
         with:
           gradle-version: "8.11.1"
 
+      - name: Read application version
+        id: app_version
+        run: |
+          set -euo pipefail
+          version="$(cat VERSION)"
+          test -n "$version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+        working-directory: ${{ github.workspace }}
+
       - name: Restore official signing key
         env:
           KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
@@ -84,15 +93,20 @@ jobs:
         run: |
           gradle :app:assembleRelease --no-daemon
           cp app/build/outputs/apk/release/app-release.apk TagTracker.apk || cp app/build/outputs/apk/release/*-release*.apk TagTracker.apk
+          cp TagTracker.apk "TagTracker-v${{ steps.app_version.outputs.version }}.apk"
 
       - name: Upload signed APK for this branch
         uses: actions/upload-artifact@v4
         with:
-          name: TagTracker-signed-apk
-          path: android/TagTracker.apk
+          name: TagTracker-v${{ steps.app_version.outputs.version }}-signed-apk
+          path: |
+            android/TagTracker.apk
+            android/TagTracker-v${{ steps.app_version.outputs.version }}.apk
 
       - name: Publish official GitHub Release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          files: android/TagTracker.apk
+          files: |
+            android/TagTracker.apk
+            android/TagTracker-v${{ steps.app_version.outputs.version }}.apk
