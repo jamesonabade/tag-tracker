@@ -92,21 +92,18 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           gradle :app:assembleRelease --no-daemon
-          cp app/build/outputs/apk/release/app-release.apk TagTracker.apk || cp app/build/outputs/apk/release/*-release*.apk TagTracker.apk
-          cp TagTracker.apk "TagTracker-v${{ steps.app_version.outputs.version }}.apk"
+          set -euo pipefail
+          cp app/build/outputs/apk/release/app-release.apk "TagTracker-v${{ steps.app_version.outputs.version }}.apk"
 
       - name: Upload signed APK for this branch
         uses: actions/upload-artifact@v4
         with:
           name: TagTracker-v${{ steps.app_version.outputs.version }}-signed-apk
-          path: |
-            android/TagTracker.apk
-            android/TagTracker-v${{ steps.app_version.outputs.version }}.apk
+          path: android/TagTracker-v${{ steps.app_version.outputs.version }}.apk
+          if-no-files-found: error
 
       - name: Publish official GitHub Release
         if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v2
         with:
-          files: |
-            android/TagTracker.apk
-            android/TagTracker-v${{ steps.app_version.outputs.version }}.apk
+          files: android/TagTracker-v${{ steps.app_version.outputs.version }}.apk
