@@ -170,7 +170,7 @@ public class UpdateChecker {
             }
         } catch (Exception ignored) {
         }
-        return "3.23.2";
+        return BuildConfig.VERSION_NAME;
     }
 
     /** True if `latest` is a strictly higher version than `current`. Tolerates a leading 'v'. */

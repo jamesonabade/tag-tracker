@@ -143,6 +143,8 @@ public class SettingsActivity extends Activity {
                 s.put("pro", pro);
                 boolean autoUpdate = TagApp.prefs(this).getBoolean(TagApp.KEY_AUTO_UPDATE, true);
                 s.put("autoUpdate", autoUpdate);
+                String appVersion = UpdateChecker.currentVersion(this);
+                s.put("appVersion", appVersion);
 
                 final String jsonStr = s.toString();
                 runOnUiThread(() -> {

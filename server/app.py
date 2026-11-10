@@ -215,6 +215,15 @@ def settings_page():
     return FileResponse(WEB_DIR / "settings.html", headers=NO_CACHE_HEADERS)
 
 
+VERSION_FILE = ROOT / "VERSION"
+APP_VERSION = VERSION_FILE.read_text(encoding="utf-8").strip() if VERSION_FILE.exists() else "3.23.2"
+
+
+@app.get("/api/version")
+def api_version():
+    return {"version": APP_VERSION}
+
+
 @app.get("/health")
 def health():
     return {"ok": True}

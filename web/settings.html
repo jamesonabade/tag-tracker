@@ -626,7 +626,7 @@
             <p class="text-[11px] text-slate-500 dark:text-slate-400">Verificação de novas versões e melhorias</p>
           </div>
         </div>
-        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60">
+        <span id="updateVersionBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60">
           v3.23.2
         </span>
       </div>
@@ -710,7 +710,7 @@
         </button>
       </div>
 
-      <div class="text-center pt-2 text-[11px] text-slate-400">
+      <div id="footerVersionText" class="text-center pt-2 text-[11px] text-slate-400">
         Tag Tracker v3.23.2 · Código Aberto GPL-3.0 · Contato: jamesonabade@gmail.com
       </div>
     </section>
@@ -867,18 +867,41 @@
       error: null
     };
 
-    // No modo web/navegador, carregar preferência salva
+    // Função central para aplicar e atualizar a versão em toda a tela
+    function applyAppVersion(ver) {
+      if (!ver) return;
+      const formatted = (ver.startsWith('v') || ver.startsWith('V')) ? ver : 'v' + ver;
+      currentState.appVersion = formatted;
+      const v1 = document.getElementById('appVersionText');
+      if (v1) v1.innerText = formatted;
+      const v2 = document.getElementById('updateVersionBadge');
+      if (v2) v2.innerText = formatted;
+      const v3 = document.getElementById('footerVersionText');
+      if (v3) v3.innerText = 'Tag Tracker ' + formatted + ' · Código Aberto GPL-3.0 · Contato: jamesonabade@gmail.com';
+    }
+
+    // No modo web/navegador, carregar preferência salva e versão centralizada da API
     if (!isNative) {
       try {
         const saved = localStorage.getItem('auto_check_updates');
         if (saved !== null) currentState.autoUpdate = (saved === 'true');
       } catch (e) {}
+
+      fetch('/api/version')
+        .then(r => r.json())
+        .then(d => {
+          if (d && d.version) applyAppVersion(d.version);
+        })
+        .catch(() => {});
     }
 
     function updateState(jsonStr) {
       try {
         const data = typeof jsonStr === 'string' ? JSON.parse(jsonStr) : jsonStr;
         currentState = Object.assign({}, currentState, data);
+        if (currentState.appVersion) {
+          applyAppVersion(currentState.appVersion);
+        }
         render();
       } catch (e) {
         console.error("Erro ao atualizar estado:", e);
@@ -1385,7 +1408,7 @@
         if (!res.ok) throw new Error('HTTP ' + res.status);
         const rel = await res.json();
         const latestTag = rel.tag_name || '';
-        const currentTag = 'v3.23.2';
+        const currentTag = currentState.appVersion || 'v3.23.2';
         if (isNewerVersion(latestTag, currentTag)) {
           const notes = rel.body ? '\n\nNovidades:\n' + rel.body.substring(0, 300) : '';
           const go = confirm('Uma nova versão (' + latestTag + ') está disponível!' + notes + '\n\nDeseja abrir a página da versão para download?');
