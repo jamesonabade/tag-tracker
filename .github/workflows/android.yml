@@ -53,8 +53,8 @@ jobs:
 
       - name: Build APK
         env:
-          VERSION_CODE: ${{ github.run_number }}
-          VERSION_NAME: ${{ github.ref_type == 'tag' && github.ref_name || '' }}
+          # Gradle derives versionCode/versionName from the root VERSION file.
+          # Never use github.run_number as versionCode: it can be lower than installed APKs.
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
