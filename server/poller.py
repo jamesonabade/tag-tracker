@@ -20,6 +20,7 @@ def poll_once() -> int:
     status["running"] = True
     try:
         trackers = finder.list_trackers()
+        db.sync_google_devices(trackers)
         for name, canonic_id in trackers:
             db.upsert_device(canonic_id, name)
             try:

@@ -585,6 +585,30 @@ body {
   box-shadow: var(--shadow-md);
 }
 
+.tag-chip-off {
+  color: var(--status-warn);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+}
+
+.tag-chip.active .tag-chip-off { color: #fbbf24; }
+
+.tag-chip.is-off:not(.active) { border-style: dashed; }
+
+.tag-chip-remove {
+  background: transparent;
+  color: var(--status-danger);
+  border: 0;
+  padding: 8px 3px 8px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.tag-chip.active .tag-chip-remove { color: #fca5a5; }
+.tag-chip-remove:disabled { opacity: 0.45; cursor: wait; }
+
 .tag-chip-icon {
   width: 28px;
   height: 28px;

@@ -186,6 +186,13 @@
     rename: (id, name) => NATIVE ? NATIVE.rename(id, name)
       : api(`/api/devices/${encodeURIComponent(id)}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name }) }),
+    removeOffline: async (id) => {
+      if (NATIVE) {
+        if (!NATIVE.removeOfflineDevice(id)) throw new Error('A tag precisa estar OFF para ser removida.');
+        return;
+      }
+      await api(`/api/devices/${encodeURIComponent(id)}`, { method: 'DELETE' });
+    },
   };
 
   function km(a, b) {
@@ -328,14 +335,42 @@
     car.innerHTML = devices.map((d) => {
       const isAct = d.id === deviceId;
       const meta = getTagMeta(d.name);
+      const isOff = d.google_present === 0;
       const timeStr = d.last_ts ? ago(d.last_ts) : t('no_locations_stored');
-      return `<div class="tag-chip ${isAct ? 'active' : ''}" data-id="${esc(d.id)}">`
+      return `<div class="tag-chip ${isAct ? 'active' : ''} ${isOff ? 'is-off' : ''}" data-id="${esc(d.id)}">`
         + `<div class="tag-chip-icon ${meta.colorClass}"><i class="${meta.fa}"></i></div>`
         + `<div class="tag-chip-content">`
         + `<span class="tag-chip-name">${esc(d.name)}</span>`
-        + `<span class="tag-chip-meta">${esc(timeStr)}</span>`
-        + `</div></div>`;
+        + (isOff ? `<span class="tag-chip-off" title="Não consta mais na conta Google">OFF</span>`
+                 : `<span class="tag-chip-meta">${esc(timeStr)}</span>`)
+        + `</div>`
+        + (isOff ? `<button type="button" class="tag-chip-remove" title="Remover da lista (histórico preservado)" aria-label="Remover ${esc(d.name)}"><i class="fa-solid fa-trash-can"></i></button>` : '')
+        + `</div>`;
     }).join('');
+
+    car.querySelectorAll('.tag-chip-remove').forEach((button) => {
+      button.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const id = button.closest('.tag-chip')?.dataset.id;
+        const d = devices.find((x) => x.id === id);
+        if (!d || d.google_present !== 0) return;
+        if (!confirm(`Remover "${d.name}" da lista do Tag Tracker? O histórico será preservado.`)) return;
+        button.disabled = true;
+        try {
+          await data.removeOffline(id);
+          if (deviceId === id) {
+            deviceId = null;
+            store.set('device', '');
+            fitted = false;
+          }
+          await refresh();
+        } catch (err) {
+          button.disabled = false;
+          alert(err.message);
+        }
+      });
+    });
 
     car.querySelectorAll('.tag-chip[data-id]').forEach((chip) => {
       chip.addEventListener('click', () => {

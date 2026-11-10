@@ -78,8 +78,7 @@ def save_vault_keys(vault_keys: str):
 def list_tags_json() -> str:
     from server import db, finder
     tags = finder.list_trackers()
-    for name, cid in tags:
-        db.upsert_device(cid, name)
+    db.sync_google_devices(tags)
     return json.dumps([{"name": n, "id": i} for n, i in tags])
 
 
@@ -417,9 +416,14 @@ def devices_json(interval_minutes: int, backup_enabled: bool, parked: bool = Fal
     info = license_state(phone_id)
     devices = db.get_devices()
     if not info["licensed"]:
-        # Free tier: only the first tag is usable; mark the rest as locked (Pro).
-        for i, d in enumerate(devices):
-            d["locked"] = i >= lic.FREE_TAGS
+        # OFF tags do not consume the free-tier device slot.
+        active_index = 0
+        for d in devices:
+            if d.get("google_present") == 0:
+                d["locked"] = False
+            else:
+                d["locked"] = active_index >= lic.FREE_TAGS
+                active_index += 1
     return json.dumps({
         "devices": devices,
         "license": info,
@@ -448,6 +452,11 @@ def history_json(device_id: str, start: int, end: int, phone_id: str = "") -> st
 def rename(device_id: str, name: str):
     from server import db
     db.rename_device(device_id, name.strip() or "Tag", None)
+
+
+def hide_offline_device(device_id: str) -> bool:
+    from server import db
+    return db.hide_offline_device(device_id)
 
 
 def export_csv(path: str, device_id: str | None = None, start: int = 0, end: int = 2**40) -> int:
