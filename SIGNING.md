@@ -7,6 +7,14 @@ Exemplo: `3.23.3` produz `versionName=3.23.3` e `versionCode=32303`.
 O atualizador do aplicativo compara a versão instalada com a última GitHub Release publicada.
 Artifacts de builds de teste não são releases e não devem ser oferecidos como atualizações.
 
+## APK único por versão
+
+O GitHub Actions gera e publica **somente um APK** por execução, chamado `TagTracker-vX.Y.Z.apk` (ex.: `TagTracker-v3.23.4.apk`).
+O aplicativo consulta `https://api.github.com/repos/jamesonabade/tag-tracker/releases/latest`, lê a tag e procura exatamente `TagTracker-` + `tag_name` + `.apk`. A verificação do `versionName` e `versionCode` é independente do nome do APK.
+O atualizador mantém fallback para `TagTracker.apk` somente para releases antigas e não exige a publicação duplicada.
+
+**Migração excepcional:** a versão 3.23.3 instalada antes dessa mudança procura exclusivamente `TagTracker.apk`. Como a versão 3.23.4 terá apenas `TagTracker-v3.23.4.apk`, a atualização para 3.23.4 deverá ser instalada manualmente uma única vez. Basta instalar o APK oficial por cima da versão 3.23.3, sem desinstalar, mantendo os dados e a assinatura permanente. A partir da 3.23.4, a atualização pelo aplicativo volta a funcionar.
+
 ## Assinatura oficial
 
 A identidade de assinatura é uma chave privada PKCS12 permanente, não uma chave nova por build.
