@@ -234,6 +234,8 @@ public class MainActivity extends Activity {
     /** Quiet background update check, at most once a day, so the user hears about new versions
      *  without having to look. It only shows a dialog when a newer version actually exists. */
     private void maybeCheckForUpdate() {
+        boolean autoCheck = TagApp.prefs(this).getBoolean(TagApp.KEY_AUTO_UPDATE, true);
+        if (!autoCheck) return;
         final String KEY = "last_update_check";
         long now = System.currentTimeMillis();
         long last = TagApp.prefs(this).getLong(KEY, 0);

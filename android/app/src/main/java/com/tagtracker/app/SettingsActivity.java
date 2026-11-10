@@ -141,6 +141,8 @@ public class SettingsActivity extends Activity {
                 s.put("hasAppLock", hasAppLock);
                 s.put("deviceId", deviceId);
                 s.put("pro", pro);
+                boolean autoUpdate = TagApp.prefs(this).getBoolean(TagApp.KEY_AUTO_UPDATE, true);
+                s.put("autoUpdate", autoUpdate);
 
                 final String jsonStr = s.toString();
                 runOnUiThread(() -> {
@@ -583,6 +585,21 @@ public class SettingsActivity extends Activity {
                     toast("Erro: " + e.getMessage());
                 }
             }).start();
+        }
+
+        @JavascriptInterface
+        public void setAutoUpdate(boolean on) {
+            TagApp.prefs(SettingsActivity.this).edit().putBoolean(TagApp.KEY_AUTO_UPDATE, on).apply();
+            toast(on ? "Busca automática de atualizações ativada" : "Busca automática de atualizações desativada");
+            pushState();
+        }
+
+        @JavascriptInterface
+        public void checkForUpdates() {
+            runOnUiThread(() -> {
+                Toast.makeText(SettingsActivity.this, getString(R.string.toast_checking_updates), Toast.LENGTH_SHORT).show();
+                UpdateChecker.check(SettingsActivity.this, true);
+            });
         }
 
         @JavascriptInterface

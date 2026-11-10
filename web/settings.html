@@ -613,7 +613,61 @@
     </section>
 
     <!-- =====================================================================
-         SEÇÃO 8: LEGAL & PRIVACIDADE
+         SEÇÃO 8: ATUALIZAÇÕES DO APLICATIVO
+         ===================================================================== -->
+    <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3.5">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">
+            <i class="fa-solid fa-cloud-arrow-down text-sm"></i>
+          </div>
+          <div>
+            <h2 class="text-sm font-bold text-slate-900 dark:text-white">8. Atualizações do aplicativo</h2>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">Verificação de novas versões e melhorias</p>
+          </div>
+        </div>
+        <span class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800/60">
+          v3.23.2
+        </span>
+      </div>
+
+      <!-- Explicações detalhadas da função -->
+      <div class="bg-slate-50 dark:bg-slate-900/60 rounded-xl p-3 border border-slate-200/80 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-300 leading-relaxed space-y-2">
+        <p>
+          O aplicativo verifica periodicamente por novas versões lançadas oficialmente no GitHub. As atualizações corrigem falhas de compatibilidade com a rede Find Hub, aprimoram a precisão do mapa e trazem novos recursos.
+        </p>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+          <strong>Sua autonomia:</strong> se você preferir não receber avisos nem efetuar checagens em segundo plano, desative a chave abaixo a qualquer momento. Você ainda poderá checar manualmente pelo botão quando quiser.
+        </p>
+      </div>
+
+      <!-- Chave Liga/Desliga: Buscar atualizações automaticamente -->
+      <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
+        <div class="pr-3">
+          <div class="flex items-center gap-2">
+            <i class="fa-solid fa-arrows-rotate text-xs text-indigo-500"></i>
+            <span class="text-xs font-bold text-slate-800 dark:text-slate-200">Buscar atualizações automaticamente</span>
+          </div>
+          <p id="autoUpdateDesc" class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            ✓ Busca automática ativada. O app verifica periodicamente por novas versões.
+          </p>
+        </div>
+        <div id="switchAutoUpdate" onclick="handleToggleAutoUpdate()" class="w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner cursor-pointer shrink-0" role="switch" aria-checked="true">
+          <div id="thumbAutoUpdate" class="w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6"></div>
+        </div>
+      </div>
+
+      <!-- Botão para buscar novas versões agora -->
+      <div class="pt-0.5">
+        <button id="btnCheckUpdatesNow" onclick="handleCheckUpdatesNow()" class="w-full py-2.5 px-4 rounded-xl bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm pressable">
+          <i id="iconCheckUpdates" class="fa-solid fa-rotate text-xs"></i>
+          <span id="textCheckUpdates">Buscar novas versões agora</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- =====================================================================
+         SEÇÃO 9: LEGAL & PRIVACIDADE
          ===================================================================== -->
     <section class="bg-white dark:bg-slate-800/90 rounded-2xl p-4 border border-slate-200 dark:border-slate-700/80 shadow-sm space-y-3">
       <div class="flex items-center gap-2.5">
@@ -621,7 +675,7 @@
           <i class="fa-solid fa-scale-balanced text-sm"></i>
         </div>
         <div>
-          <h2 class="text-sm font-bold text-slate-900 dark:text-white">8. Legal & privacidade</h2>
+          <h2 class="text-sm font-bold text-slate-900 dark:text-white">9. Legal & privacidade</h2>
           <p class="text-[11px] text-slate-500 dark:text-slate-400">Transparência e privacidade por padrão</p>
         </div>
       </div>
@@ -809,8 +863,17 @@
       hasAppLock: false,
       deviceId: '',
       pro: false,
+      autoUpdate: true,
       error: null
     };
+
+    // No modo web/navegador, carregar preferência salva
+    if (!isNative) {
+      try {
+        const saved = localStorage.getItem('auto_check_updates');
+        if (saved !== null) currentState.autoUpdate = (saved === 'true');
+      } catch (e) {}
+    }
 
     function updateState(jsonStr) {
       try {
@@ -1036,6 +1099,24 @@
         licBadge.innerText = "Free Tier";
       }
       document.getElementById('deviceIdText').innerText = currentState.deviceId || "---";
+
+      // 8. Atualizações do Aplicativo
+      const trackU = document.getElementById('switchAutoUpdate');
+      const thumbU = document.getElementById('thumbAutoUpdate');
+      const descU = document.getElementById('autoUpdateDesc');
+      if (trackU && thumbU) {
+        if (currentState.autoUpdate !== false) {
+          trackU.className = "w-12 h-6 rounded-full bg-emerald-500 p-0.5 switch-track flex items-center pressable relative shadow-inner cursor-pointer shrink-0";
+          thumbU.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-6";
+          trackU.setAttribute('aria-checked', 'true');
+          if (descU) descU.innerText = "✓ Busca automática ativada. O app verifica periodicamente por novas versões.";
+        } else {
+          trackU.className = "w-12 h-6 rounded-full bg-slate-300 dark:bg-slate-700 p-0.5 switch-track flex items-center pressable relative shadow-inner cursor-pointer shrink-0";
+          thumbU.className = "w-5 h-5 rounded-full bg-white shadow-md switch-thumb transform translate-x-0";
+          trackU.setAttribute('aria-checked', 'false');
+          if (descU) descU.innerText = "Busca automática desativada. As atualizações não serão verificadas em segundo plano.";
+        }
+      }
     }
 
     // Ações Conectadas ao Bridge Nativo
@@ -1259,6 +1340,81 @@
         render();
         showToast('Licença removida');
       }
+    }
+
+    function handleToggleAutoUpdate() {
+      const next = !(currentState.autoUpdate !== false);
+      if (isNative && window.SettingsBridge.setAutoUpdate) {
+        window.SettingsBridge.setAutoUpdate(next);
+      } else {
+        currentState.autoUpdate = next;
+        try { localStorage.setItem('auto_check_updates', next ? 'true' : 'false'); } catch (e) {}
+        render();
+        showToast(next ? 'Busca automática de atualizações ativada' : 'Busca automática de atualizações desativada');
+      }
+    }
+
+    async function handleCheckUpdatesNow() {
+      const icon = document.getElementById('iconCheckUpdates');
+      const btn = document.getElementById('btnCheckUpdatesNow');
+      const txt = document.getElementById('textCheckUpdates');
+      if (icon) icon.classList.add('spinning');
+      if (txt) txt.innerText = "Verificando...";
+      if (btn) btn.disabled = true;
+
+      if (isNative && window.SettingsBridge.checkForUpdates) {
+        window.SettingsBridge.checkForUpdates();
+        setTimeout(() => {
+          if (icon) icon.classList.remove('spinning');
+          if (txt) txt.innerText = "Buscar novas versões agora";
+          if (btn) btn.disabled = false;
+        }, 2000);
+      } else {
+        await checkUpdatesWeb(true);
+        if (icon) icon.classList.remove('spinning');
+        if (txt) txt.innerText = "Buscar novas versões agora";
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    async function checkUpdatesWeb(userInitiated) {
+      try {
+        const res = await fetch('https://api.github.com/repos/jamesonabade/tag-tracker/releases/latest', {
+          headers: { 'Accept': 'application/vnd.github+json' }
+        });
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const rel = await res.json();
+        const latestTag = rel.tag_name || '';
+        const currentTag = 'v3.23.2';
+        if (isNewerVersion(latestTag, currentTag)) {
+          const notes = rel.body ? '\n\nNovidades:\n' + rel.body.substring(0, 300) : '';
+          const go = confirm('Uma nova versão (' + latestTag + ') está disponível!' + notes + '\n\nDeseja abrir a página da versão para download?');
+          if (go && rel.html_url) {
+            window.open(rel.html_url, '_blank');
+          }
+        } else {
+          if (userInitiated) {
+            showToast('Você já está na versão mais recente (' + currentTag + ').');
+          }
+        }
+      } catch (err) {
+        if (userInitiated) {
+          showToast('Falha ao verificar atualizações: ' + (err.message || 'Erro de rede'));
+        }
+      }
+    }
+
+    function isNewerVersion(latest, current) {
+      if (!latest || !current) return false;
+      const parse = v => v.replace(/^[vV]/, '').split(/[._-]/).map(x => parseInt(x.replace(/\D/g, ''), 10) || 0);
+      const a = parse(latest), b = parse(current);
+      const len = Math.max(a.length, b.length);
+      for (let i = 0; i < len; i++) {
+        const x = i < a.length ? a[i] : 0;
+        const y = i < b.length ? b[i] : 0;
+        if (x !== y) return x > y;
+      }
+      return false;
     }
 
     function openModal(id) {
