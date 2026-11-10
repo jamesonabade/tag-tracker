@@ -89,6 +89,9 @@ jobs:
           test -x "$tools/aapt"
           "$tools/apksigner" verify --verbose --print-certs "$apk" > "$RUNNER_TEMP/verified.txt"
           actual="$(sed -n 's/^Signer #1 certificate SHA-256 digest: //p' "$RUNNER_TEMP/verified.txt" | head -n1 | tr '[:upper:]' '[:lower:]')"
+          echo "APK certificate digest (public): $actual"
+          echo "Expected certificate digest: 1978c80be9e86c3c8bb34b12d8acff4d2c6dfb2e6949625d35e4d22c5f92d22b"
+          cat "$RUNNER_TEMP/verified.txt" | grep -E "Signer #1|Verified using" || true
           test "$actual" = "1978c80be9e86c3c8bb34b12d8acff4d2c6dfb2e6949625d35e4d22c5f92d22b" || { echo "::error::Invalid APK signature"; exit 1; }
           "$tools/aapt" dump badging "$apk" > "$RUNNER_TEMP/badging.txt"
           head -n1 "$RUNNER_TEMP/badging.txt" > "$RUNNER_TEMP/package.txt"
