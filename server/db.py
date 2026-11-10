@@ -23,7 +23,9 @@ CREATE TABLE IF NOT EXISTS devices (
     name TEXT NOT NULL,
     color TEXT,
     last_polled_at INTEGER,
-    last_error TEXT
+    last_error TEXT,
+    google_present INTEGER,     -- NULL = not checked, 1 = in Google, 0 = removed from Google
+    hidden INTEGER NOT NULL DEFAULT 0
 );
 CREATE TABLE IF NOT EXISTS locations (
     id INTEGER PRIMARY KEY,
@@ -60,6 +62,12 @@ def init():
     with connect() as c:
         c.execute("PRAGMA journal_mode=WAL")
         c.executescript(SCHEMA)
+        # Keep existing tags and their location history during schema migration.
+        columns = {row["name"] for row in c.execute("PRAGMA table_info(devices)")}
+        if "google_present" not in columns:
+            c.execute("ALTER TABLE devices ADD COLUMN google_present INTEGER")
+        if "hidden" not in columns:
+            c.execute("ALTER TABLE devices ADD COLUMN hidden INTEGER NOT NULL DEFAULT 0")
 
 
 # ---------- users ----------
@@ -127,6 +135,34 @@ def upsert_device(device_id: str, name: str):
         )
 
 
+def sync_google_devices(trackers: list[tuple[str, str]]) -> None:
+    """Mark missing devices OFF only after a successful Google list request.
+
+    Historical locations stay in SQLite/Drive. Hidden devices reappear only
+    if Google returns the same ID again.
+    """
+    with connect() as c:
+        c.execute("UPDATE devices SET google_present=0")
+        for name, canonic_id in trackers:
+            n = c.execute("SELECT COUNT(*) FROM devices").fetchone()[0]
+            c.execute(
+                """INSERT INTO devices(id, name, color, google_present, hidden)
+                   VALUES(?, ?, ?, 1, 0)
+                   ON CONFLICT(id) DO UPDATE SET
+                     name=excluded.name, google_present=1, hidden=0""",
+                (canonic_id, name, PALETTE[n % len(PALETTE)]),
+            )
+
+
+def hide_offline_device(device_id: str) -> bool:
+    """Hide only a confirmed OFF tag; do not erase its location history."""
+    with connect() as c:
+        return c.execute(
+            "UPDATE devices SET hidden=1 WHERE id=? AND google_present=0 AND hidden=0",
+            (device_id,),
+        ).rowcount > 0
+
+
 def mark_polled(device_id: str, error: str | None):
     with connect() as c:
         c.execute(
@@ -160,6 +196,7 @@ def get_devices():
                LEFT JOIN locations l ON l.id = (
                    SELECT id FROM locations WHERE device_id=d.id AND lat IS NOT NULL
                    ORDER BY ts DESC LIMIT 1)
+               WHERE d.hidden=0
                ORDER BY d.name"""
         ).fetchall()
     return [dict(r) for r in rows]

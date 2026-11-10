@@ -1,4 +1,5 @@
 name: Android APK
+# Validação de assinatura permanente após configuração dos Repository Secrets.
 
 on:
   push:
