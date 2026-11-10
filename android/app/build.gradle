@@ -24,19 +24,18 @@ def genWeb = layout.buildDirectory.dir("sharedCode/webassets").get().asFile
 genPy.mkdirs()
 genWeb.mkdirs()
 
-// Read central VERSION file from repo root
+// VERSION is the single source for both GitHub Actions and Android Studio.
 def verFile = file("${repoRoot}/VERSION")
-def defaultVersion = verFile.exists() ? verFile.text.trim() : "3.23.2"
-def defaultVersionCode = {
-    try {
-        def nums = defaultVersion.replaceAll(/[^0-9.]/, "").split("\\.")
-        int c = 0
-        for (int i = 0; i < nums.length && i < 3; i++) {
-            c = c * 100 + Integer.parseInt(nums[i])
-        }
-        return c > 0 ? c : 3232
-    } catch (Exception e) { return 3232 }
-}()
+if (!verFile.isFile()) throw new GradleException("VERSION file is missing")
+def defaultVersion = verFile.text.trim()
+if (!(defaultVersion ==~ /\d+\.\d+\.\d+/)) {
+    throw new GradleException("VERSION must have MAJOR.MINOR.PATCH (e.g. 3.23.3)")
+}
+def versionNumbers = defaultVersion.tokenize(".").collect { it.toInteger() }
+if (versionNumbers[1] >= 100 || versionNumbers[2] >= 100) {
+    throw new GradleException("VERSION minor and patch components must be < 100")
+}
+def defaultVersionCode = versionNumbers[0] * 10000 + versionNumbers[1] * 100 + versionNumbers[2]
 
 android {
     namespace "com.tagtracker.app"
@@ -50,8 +49,8 @@ android {
         applicationId "com.tagtracker.app"
         minSdk 24
         targetSdk 35
-        versionCode Integer.parseInt(System.getenv("VERSION_CODE") ?: "${defaultVersionCode}")
-        versionName System.getenv("VERSION_NAME") ?: defaultVersion
+        versionCode defaultVersionCode
+        versionName defaultVersion
         ndk { abiFilters "arm64-v8a" }  // real phones only; drops x86_64 emulator libs (~half the size)
     }
 
