@@ -158,6 +158,31 @@ public class MainActivity extends Activity {
             }).start();
         }
 
+
+        /** Dedicated live-mode request with completion callback to the map WebView. */
+        @JavascriptInterface
+        public void locateLive(String deviceId, String requestId) {
+            new Thread(() -> {
+                int added = 0;
+                String error = null;
+                try {
+                    added = TagApp.py(MainActivity.this).callAttr("locate_now", deviceId).toInt();
+                    DriveBackup.backupIfDue(MainActivity.this, added > 0);
+                } catch (Exception e) {
+                    error = msg(e);
+                }
+                final int count = added;
+                final String failure = error;
+                runOnUiThread(() -> {
+                    if (web == null) return;
+                    String script = "if (window.liveLocateFinished) window.liveLocateFinished("
+                        + JSONObject.quote(requestId) + "," + count + ","
+                        + (failure == null ? "null" : JSONObject.quote(failure)) + ");";
+                    web.evaluateJavascript(script, null);
+                });
+            }, "tag-live-locate").start();
+        }
+
         @JavascriptInterface
         public void playSound(String deviceId) {
             new Thread(() -> {
@@ -308,6 +333,15 @@ public class MainActivity extends Activity {
         if (web != null) {
             web.evaluateJavascript("if (window.refreshApp) window.refreshApp(); else if (typeof refresh === 'function') refresh(); else location.reload();", null);
         }
+    }
+
+    @Override
+    protected void onPause() {
+        // Stop the live timer when the Android map is no longer in the foreground.
+        if (web != null) {
+            web.evaluateJavascript("if (window.stopLiveTracking) window.stopLiveTracking();", null);
+        }
+        super.onPause();
     }
 
     @Override

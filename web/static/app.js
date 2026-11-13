@@ -360,6 +360,7 @@
         try {
           await data.removeOffline(id);
           if (deviceId === id) {
+            if (liveActive) stopLiveTracking('live_no_tag');
             deviceId = null;
             store.set('device', '');
             fitted = false;
@@ -377,6 +378,7 @@
         const id = chip.dataset.id;
         const d = devices.find((x) => x.id === id);
         if (d && d.locked) { openLicense(); return; }
+        if (liveActive && id !== deviceId) stopLiveTracking('live_paused');
         deviceId = id;
         store.set('device', deviceId);
         const sel = $('device');
@@ -1223,6 +1225,7 @@
     deviceSel.addEventListener('change', (e) => {
       const d = devices.find((x) => x.id === e.target.value);
       if (d && d.locked) { openLicense(); e.target.value = deviceId; return; }
+      if (liveActive && e.target.value !== deviceId) stopLiveTracking('live_paused');
       deviceId = e.target.value; store.set('device', deviceId); fitted = false;
       renderTagCarousel(); renderLatest(); loadHistory().catch(alert);
     });
@@ -1315,6 +1318,140 @@
 
   const locateBtn = $('locate');
   if (locateBtn) locateBtn.addEventListener('click', locateNow);
+
+  // Experimental live mode. A new Find Hub request starts only after the previous
+  // request finishes and a 30s cool-down passes. No GPS, BLE scanning or fake points.
+  const LIVE_GAP_MS = 30000;
+  const LIVE_MAX_MS = 30 * 60 * 1000;
+  const liveButton = $('liveToggle');
+  const liveStatus = $('liveStatus');
+  let liveActive = false, liveTimer = null, liveSession = 0, liveStartedAt = 0;
+  let liveErrors = 0, liveRequestInFlight = false, livePending = null, liveSeq = 0;
+  let liveStatusKey = 'live_off', liveStatusParam = null;
+
+  function setLiveStatus(key, param = null) {
+    liveStatusKey = key;
+    liveStatusParam = param;
+    if (liveStatus) liveStatus.textContent = t(key, param);
+  }
+
+  function renderLiveButton() {
+    if (!liveButton) return;
+    liveButton.classList.toggle('active', liveActive);
+    liveButton.setAttribute('aria-pressed', String(liveActive));
+    // Do not start a second request while the Android bridge is still waiting.
+    liveButton.disabled = !liveActive && liveRequestInFlight;
+    const label = liveButton.querySelector('span');
+    if (label) label.textContent = t(liveActive ? 'live_stop' : 'live_start');
+  }
+
+  function stopLiveTracking(key = 'live_off') {
+    liveActive = false;
+    liveSession++;
+    clearTimeout(liveTimer);
+    liveTimer = null;
+    renderLiveButton();
+    setLiveStatus(key);
+  }
+  window.stopLiveTracking = () => { if (liveActive) stopLiveTracking('live_paused'); };
+
+  // The Android Java bridge is asynchronous: it reports completion into this
+  // callback, instead of returning before the Python location request is done.
+  window.liveLocateFinished = (token, count, error) => {
+    const req = livePending;
+    if (!req || req.token !== token) return; // late/old completion
+    clearTimeout(req.timeout);
+    livePending = null;
+    if (error) req.reject(new Error(String(error)));
+    else req.resolve({ added: Number(count) || 0 });
+  };
+
+  async function queryLiveLocation(id) {
+    if (!NATIVE) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 115000);
+      try {
+        return await api(`/api/locate/${encodeURIComponent(id)}`,
+          { method: 'POST', signal: controller.signal });
+      } finally {
+        clearTimeout(timeout);
+      }
+    }
+    if (!NATIVE.locateLive) throw new Error('This APK needs the experimental live bridge.');
+    return new Promise((resolve, reject) => {
+      const token = String(Date.now()) + '-' + String(++liveSeq);
+      const timeout = setTimeout(
+        () => window.liveLocateFinished(token, 0, t('live_timeout')), 115000);
+      livePending = { token, resolve, reject, timeout };
+      try {
+        NATIVE.locateLive(id, token);
+      } catch (err) {
+        window.liveLocateFinished(token, 0, err.message || String(err));
+      }
+    });
+  }
+
+  async function liveCycle(session) {
+    if (!liveActive || session !== liveSession || document.hidden || liveRequestInFlight) return;
+    if (Date.now() - liveStartedAt >= LIVE_MAX_MS) {
+      stopLiveTracking('live_expired');
+      return;
+    }
+    const id = deviceId;
+    const before = devices.find((d) => d.id === id);
+    if (!id || !before || before.locked) {
+      stopLiveTracking('live_no_tag');
+      return;
+    }
+    const previousTs = Number(before.last_ts) || 0;
+    liveRequestInFlight = true;
+    setLiveStatus('live_checking');
+    try {
+      await queryLiveLocation(id);
+      if (!liveActive || session !== liveSession || deviceId !== id || document.hidden) return;
+      await refresh();
+      if (!liveActive || session !== liveSession || deviceId !== id || document.hidden) return;
+      const latest = devices.find((d) => d.id === id);
+      const ts = Number(latest?.last_ts) || 0;
+      if (ts > previousTs && latest.last_lat != null && latest.last_lon != null) {
+        setLiveStatus('live_new', fmt(ts));
+        map.panTo([latest.last_lat, latest.last_lon], { animate: true, duration: 0.7 });
+      } else {
+        setLiveStatus(ts ? 'live_waiting' : 'live_no_location', ts ? fmt(ts) : null);
+      }
+      liveErrors = 0;
+    } catch (err) {
+      if (!liveActive || session !== liveSession) return;
+      liveErrors++;
+      setLiveStatus('live_error', err?.message || String(err));
+      if (liveErrors >= 3) stopLiveTracking('live_auto_stopped');
+    } finally {
+      liveRequestInFlight = false;
+      renderLiveButton();
+      if (liveActive && session === liveSession) {
+        liveTimer = setTimeout(() => liveCycle(session), LIVE_GAP_MS);
+      }
+    }
+  }
+
+  if (liveButton) {
+    liveButton.addEventListener('click', () => {
+      if (liveActive) { stopLiveTracking(); return; }
+      if (liveRequestInFlight) { setLiveStatus('live_busy'); return; }
+      if (!deviceId) { setLiveStatus('live_no_tag'); return; }
+      liveActive = true;
+      liveSession++;
+      liveStartedAt = Date.now();
+      liveErrors = 0;
+      renderLiveButton();
+      liveCycle(liveSession);
+    });
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) window.stopLiveTracking();
+  });
+  window.addEventListener('pagehide', () => window.stopLiveTracking());
+  renderLiveButton();
 
   const parkBtn = $('park');
   if (parkBtn) {
@@ -1433,6 +1570,8 @@
   if (window.I18N) {
     window.I18N.onChange(() => {
       if (recenterBtn) recenterBtn.title = t('center_on_tag');
+      renderLiveButton();
+      setLiveStatus(liveStatusKey, liveStatusParam);
       refresh();
     });
   }
